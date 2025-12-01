@@ -1,0 +1,14 @@
+package com.arturjarosz.fixmybudget.properties;
+
+public enum FieldType {
+    TRANSACTION_DATE,
+    TRANSACTION_TYPE,
+    TRANSACTION_AMOUNT,
+    TRANSACTION_CATEGORY,
+    TRANSACTION_DETAILS,
+    RECIPIENT_NAME,
+    SENDER_NAME,
+    SENDER_ACCOUNT,
+    RECIPIENT_ACCOUNT,
+    NONE
+}

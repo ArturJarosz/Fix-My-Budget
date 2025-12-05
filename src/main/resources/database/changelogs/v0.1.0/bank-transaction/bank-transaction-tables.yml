@@ -1,0 +1,56 @@
+databaseChangeLog:
+  - changeSet:
+      author: "Liquibase"
+      id: "create-bank-transaction-table"
+      changes:
+        - createTable:
+            tableName: "BANK_TRANSACTION"
+            columns:
+              - column:
+                  name: "ID"
+                  type: "${long.type}"
+                  constraints:
+                    nullable: false
+              - column:
+                  name: "TRANSACTION_DATE"
+                  type: "${date.type}"
+                  constraints:
+                    nullable: false
+              - column:
+                  name: "TRANSACTION_TYPE"
+                  type: "VARCHAR2(30 ${char.unit})"
+                  constraints:
+                    nullable: false
+              - column:
+                  name: "AMOUNT"
+                  type: "${big_decimal.type}"
+                  defaultValue: "0.0"
+                  constraints:
+                    nullable: false
+              - column:
+                  name: "CATEGORY"
+                  type: "VARCHAR2(30 ${char.unit})"
+                  constraints:
+                    nullable: false
+              - column:
+                  name: "DETAILS"
+                  type: "VARCHAR2(300 ${char.unit})"
+                  constraints:
+                    nullable: false
+              - column:
+                  name: "RECIPIENT_NAME"
+                  type: "VARCHAR2(100 ${char.unit})"
+              - column:
+                  name: "SENDER_NAME"
+                  type: "VARCHAR2(100 ${char.unit})"
+              - column:
+                  name: "RECIPIENT_ACCOUNT"
+                  type: "VARCHAR2(32 ${char.unit})"
+              - column:
+                  name: "SENDER_ACCOUNT"
+                  type: "VARCHAR2(32 ${char.unit})"
+
+        - addPrimaryKey:
+            tableName: "BANK_TRANSACTION"
+            constraintName: "PK_BANK_TRANSACTION"
+            columnNames: "ID"

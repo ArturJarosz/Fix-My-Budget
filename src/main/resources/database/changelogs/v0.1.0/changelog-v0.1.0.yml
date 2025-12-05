@@ -1,0 +1,10 @@
+databaseChangeLog:
+  - include:
+      relativeToChangelogFile: true
+      file: "bank-transaction/changelog-bank-transaction.yml"
+  - changeSet:
+      author: "Liquibase"
+      id: "tag-version-0.1.0"
+      changes:
+        - tagDatabase:
+            tag: "v0.1.0"

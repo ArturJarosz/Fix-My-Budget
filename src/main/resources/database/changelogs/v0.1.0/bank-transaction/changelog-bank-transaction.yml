@@ -1,0 +1,7 @@
+databaseChangeLog:
+  - include:
+      relativeToChangelogFile: true
+      file: "bank-transaction-tables.yml"
+  - include:
+      relativeToChangelogFile: true
+      file: "bank-transaction-sequence.yml"

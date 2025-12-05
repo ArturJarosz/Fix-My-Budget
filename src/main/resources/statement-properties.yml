@@ -1,0 +1,229 @@
+# available types for headers and then in category mapping:
+#    TRANSACTION_DATE
+#    TRANSACTION_TYPE
+#    TRANSACTION_AMOUNT
+#    TRANSACTION_CATEGORY
+#    TRANSACTION_DETAILS
+#    RECIPIENT_NAME
+#    SENDER_NAME
+#    NONE
+
+# available delimiters:
+#   COMA(','),
+#   SEMICOLON(';')
+
+account-statement:
+  banks:
+    ALIOR:
+      headers:
+        - name: "Data transakcji"
+          types:
+            - TRANSACTION_DATE
+        - name: "Data księgowania"
+        - name: "Nazwa nadawcy"
+          types:
+            - SENDER_NAME
+        - name: "Nazwa odbiorcy"
+          types:
+            - RECIPIENT_NAME
+        - name: "Szczegóły transakcji"
+          types:
+            - TRANSACTION_DETAILS
+        - name: "Kwota operacji"
+        - name: "Waluta operacji"
+        - name: "Kwota w walucie rachunku"
+          types:
+            - TRANSACTION_AMOUNT
+            - TRANSACTION_TYPE
+        - name: "Waluta rachunku"
+        - name: "Numer rachunku nadawcy"
+          types:
+            - SENDER_ACCOUNT
+        - name: "Numer rachunku odbiorcy"
+          types:
+            - RECIPIENT_ACCOUNT
+      skip-lines: 1
+      delimiter: SEMICOLON
+      has-headers: true
+    SANTANDER:
+      headers:
+        - name: "Data księgowania"
+        - name: "Data operacji"
+          types:
+            - TRANSACTION_DATE
+        - name: "Tytuł operacji"
+          types:
+            - TRANSACTION_DETAILS
+        - name: "Dane strony operacji"
+          types:
+            - SENDER_NAME
+            - RECIPIENT_NAME
+        - name: "Rachunek strony operacji"
+          types:
+            - SENDER_ACCOUNT
+            - RECIPIENT_ACCOUNT
+        - name: "Kwota"
+          types:
+            - TRANSACTION_AMOUNT
+            - TRANSACTION_TYPE
+        - name: "Saldo"
+        - name: "Pozycja historii"
+      skip-lines: 1
+      has-headers: false
+      delimiter: SEMICOLON
+
+# available match types:
+#   EQUALS
+#   CONTAINS
+#   STARTS_WITH
+#   ENDS_WITH
+
+category:
+  mapping:
+    ALIOR:
+      - name: Eating out
+        requirements:
+          - fieldType: TRANSACTION_DETAILS
+            matchType: CONTAINS
+            values:
+              - mcdonalds
+              - "STREET GALLERY Warszawa PL"
+              - "ZAHIR KEBAB"
+              - "U Fotografa craft "
+              - "pyszne.pl"
+              - "BISTRO BURSAKI"
+              - "Glovo"
+              - "DILER PIZZA"
+              - "Subway "
+              - "CUKIERNIA CZEKOLADOWY"
+              - "KOH-I-NOOR KEBAB"
+      - name: Everyday shopping
+        requirements:
+          - field-type: TRANSACTION_DETAILS
+            match-type: CONTAINS
+            values:
+              - Lidl
+              - Biedronka
+              - "ZABKA "
+              - "PPHU MALGOSKA LUBLIN"
+              - "STOKROTKA NR"
+              - "Sklep na Winklu"
+              - "Supermarket Auchan"
+      - name: Electronics
+        requirements:
+          - field-type: TRANSACTION_DETAILS
+            match-type: CONTAINS
+            values:
+              - "x-kom"
+              - ME M09 01 Lublin PL
+      - name: Fuel
+        requirements:
+          - field-type: TRANSACTION_DETAILS
+            match-type: CONTAINS
+            values:
+              - "BP-MARKUSZOW"
+              - "ORLEN STACJA"
+              - "BP-SAFARI"
+              - "BP-BOTANIK"
+      - name: Income
+        requirements:
+          - field-type: SENDER_ACCOUNT
+            match-type: EQUALS
+            values:
+              - "65 1090 2590 0000 0001 5896 2621"
+      - name: Skowronkowa House - BUY
+        requirements:
+          - field-type: TRANSACTION_DETAILS
+            match-type: CONTAINS
+            values:
+              - "KANCELARIA NOTARIALNA LUBLIN PL"
+      - name: Skowronkowa House - BUY
+        requirements:
+          - field-type: RECIPIENT_NAME
+            match-type: CONTAINS
+            values:
+              - "Haaly"
+      - name: Skowronkowa House - RENOVATION
+        requirements:
+          - field-type: TRANSACTION_DETAILS
+            match-type: CONTAINS
+            values:
+              - "Leroy Merlin"
+              - "FLUGGER POLAND"
+      - name: Skowronkowa House - RENOVATION
+        requirements:
+          - field-type: RECIPIENT_NAME
+            match-type: CONTAINS
+            values:
+              - "Impero Bocheński"
+              - "Z53 Sp"
+              - "LUVI-PAWEŁ POŻAK"
+      - name: From Alior to Santander
+        requirements:
+          - field-type: RECIPIENT_ACCOUNT
+            match-type: EQUALS
+            values:
+              - "69 1090 2688 0000 0001 5640 3239"
+      - name: Taxes and The Code expenses
+        requirements:
+          - field-type: TRANSACTION_DETAILS
+            match-type: CONTAINS
+            values:
+              - "Pierwszy Urząd Skarbowy"
+              - "USŁUGI KSIĘGOWE ZGODNIE Z UMOWA"
+      - name: Taxes and The Code expenses
+        requirements:
+          - field-type: RECIPIENT_NAME
+            match-type: CONTAINS
+            values:
+              - "Zakład Ubezpieczeń Społecznych"
+      - name: Bank deposit closing
+        requirements:
+          - field-type: TRANSACTION_DETAILS
+            match-type: CONTAINS
+            values:
+              - "Zamknięcie lokaty"
+      - name: Bank deposit opening
+        requirements:
+          - field-type: TRANSACTION_DETAILS
+            match-type: CONTAINS
+            values:
+              - "Założenie lokaty"
+      - name: ATM WITHDRAWALS
+        requirements:
+          - field-type: TRANSACTION_DETAILS
+            match-type: CONTAINS
+            values:
+              - "ATM EURONET "
+              - "Wypłata w bankomacie"
+      - name: BOLT UBER etc.
+        requirements:
+          - field-type: TRANSACTION_DETAILS
+            match-type: CONTAINS
+            values:
+              - "BOLT.EU"
+      - name: XTB
+        requirements:
+          - field-type: TRANSACTION_DETAILS
+            match-type: CONTAINS
+            values:
+              - "www.xtb.com"
+      - name: PRUDENTIAL
+        requirements:
+          - field-type: RECIPIENT_NAME
+            match-type: CONTAINS
+            values:
+              - "PRUDENTIAL emerytura"
+      - name: ADOBE
+        requirements:
+          - field-type: TRANSACTION_DETAILS
+            match-type: CONTAINS
+            values:
+              - "ADOBE"
+      - name: SUBSCRIPTIONS
+        requirements:
+          - field-type: TRANSACTION_DETAILS
+            match-type: CONTAINS
+            values:
+              - "DISNEY PLUS"
+              - "Netflix.com "

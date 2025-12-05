@@ -4,6 +4,7 @@ import com.arturjarosz.fixmybudget.application.Bank;
 import com.arturjarosz.fixmybudget.domain.category.CategoryResolver;
 import com.arturjarosz.fixmybudget.domain.mapper.RowToTransactionMapper;
 import com.arturjarosz.fixmybudget.domain.model.BankTransaction;
+import com.arturjarosz.fixmybudget.domain.repository.BankTransactionRepository;
 import com.arturjarosz.fixmybudget.dto.AnalyzedStatementDto;
 import com.arturjarosz.fixmybudget.dto.CategoryDto;
 import com.arturjarosz.fixmybudget.dto.SummaryDto;
@@ -35,6 +36,7 @@ public class CsvReaderService {
     private final AccountStatementFileProperties accountStatementFileProperties;
     private final RowToTransactionMapper rowToTransactionMapper;
     private final CategoryResolver categoryResolver;
+    private final BankTransactionRepository bankTransactionRepository;
 
     public AnalyzedStatementDto readCsv(MultipartFile file, Bank bank) {
         List<BankTransaction> bankTransactions = new ArrayList<>();
@@ -62,6 +64,7 @@ public class CsvReaderService {
             }
             log.info("Read {} rows from csv file", bankTransactions.size());
             categoryResolver.enrichWithCategories(bankTransactions, bank);
+            bankTransactionRepository.saveAll(bankTransactions);
             log.info("Read {} rows with categories:", bankTransactions.stream()
                     .filter(bankTransaction -> bankTransaction.getCategory() != null)
                     .toList()

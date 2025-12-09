@@ -17,6 +17,8 @@ import java.util.stream.Collectors;
 
 @Component
 public class CategoryResolver {
+    private static final String UNCATEGORIZED = "UNCATEGORIZED";
+
     private final CategoryProperties categoryProperties;
     private final Map<MatchType, RequirementChecker> checkerByType;
     private final Map<FieldType, FieldProvider> fieldProviderByFieldType;
@@ -40,7 +42,7 @@ public class CategoryResolver {
 
     String resolveCategory(BankTransaction bankTransaction, Bank bank) {
         var categoryMappings = categoryProperties.mapping();
-        String resolvedCategory = "UNCATEGORIZED";
+        String resolvedCategory = UNCATEGORIZED;
         for (CategoryEntryProperties categoryMapping : categoryMappings.get(bank)) {
             var requirementsMet = true;
             for (CategoryRequirementsProperties requirement : categoryMapping.requirements()) {

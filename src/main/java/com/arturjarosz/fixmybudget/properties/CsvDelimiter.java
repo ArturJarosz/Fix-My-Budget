@@ -6,9 +6,9 @@ import lombok.Getter;
 public enum CsvDelimiter {
     COMA(','), SEMICOLON(';');
 
-    private final char delimiter;
+    private final char character;
 
-    CsvDelimiter(char delimiter) {
-        this.delimiter = delimiter;
+    CsvDelimiter(char character) {
+        this.character = character;
     }
 }

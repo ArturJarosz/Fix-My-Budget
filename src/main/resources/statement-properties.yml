@@ -44,6 +44,7 @@ account-statement:
             - RECIPIENT_ACCOUNT
       skip-lines: 1
       delimiter: SEMICOLON
+      trailing-character: COMA
       has-headers: true
     SANTANDER:
       headers:

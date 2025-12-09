@@ -1,6 +1,6 @@
 package com.arturjarosz.fixmybudget.application;
 
-import com.arturjarosz.fixmybudget.domain.CsvReaderService;
+import com.arturjarosz.fixmybudget.domain.CsvDomainService;
 import com.arturjarosz.fixmybudget.dto.AnalyzedStatementDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -8,14 +8,18 @@ import org.springframework.web.multipart.MultipartFile;
 
 @RequiredArgsConstructor
 @Service
-public class CsvService {
+public class CsvApplicationService {
     private final FileValidator fileValidator;
-    private final CsvReaderService csvReader;
+    private final CsvDomainService csvDomainService;
 
-    public AnalyzedStatementDto readCsv(MultipartFile file, Bank bank) {
+    public AnalyzedStatementDto processCsv(MultipartFile file, Bank bank, String source) {
         fileValidator.checkIfFileIsNotEmpty(file);
         fileValidator.checkIfFileIsCsv(file);
 
-        return csvReader.readCsv(file, bank);
+        return csvDomainService.readCsv(file, bank, source);
+    }
+
+    public AnalyzedStatementDto calculateCategories(Bank bank) {
+        return csvDomainService.calculateCategories(bank);
     }
 }

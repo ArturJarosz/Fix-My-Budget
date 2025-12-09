@@ -49,6 +49,15 @@ databaseChangeLog:
               - column:
                   name: "SENDER_ACCOUNT"
                   type: "VARCHAR2(32 ${char.unit})"
+              - column:
+                  name: "SOURCE"
+                  type: VARCHAR2(40 ${char.unit})
+              - column:
+                  name: "TRANSACTION_HASH"
+                  type: "VARCHAR2(64 ${char.unit})"
+                  constraints:
+                    nullable: true
+
 
         - addPrimaryKey:
             tableName: "BANK_TRANSACTION"

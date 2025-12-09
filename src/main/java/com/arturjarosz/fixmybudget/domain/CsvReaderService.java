@@ -1,13 +1,9 @@
 package com.arturjarosz.fixmybudget.domain;
 
 import com.arturjarosz.fixmybudget.application.Bank;
-import com.arturjarosz.fixmybudget.domain.category.CategoryResolver;
 import com.arturjarosz.fixmybudget.domain.mapper.RowToTransactionMapper;
 import com.arturjarosz.fixmybudget.domain.model.BankTransaction;
-import com.arturjarosz.fixmybudget.domain.repository.BankTransactionRepository;
-import com.arturjarosz.fixmybudget.dto.AnalyzedStatementDto;
-import com.arturjarosz.fixmybudget.dto.CategoryDto;
-import com.arturjarosz.fixmybudget.dto.SummaryDto;
+import com.arturjarosz.fixmybudget.domain.validator.CsvValidator;
 import com.arturjarosz.fixmybudget.properties.AccountStatementFileProperties;
 import com.opencsv.CSVParserBuilder;
 import com.opencsv.CSVReader;
@@ -21,12 +17,8 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -35,15 +27,13 @@ public class CsvReaderService {
     private final CsvValidator csvValidator;
     private final AccountStatementFileProperties accountStatementFileProperties;
     private final RowToTransactionMapper rowToTransactionMapper;
-    private final CategoryResolver categoryResolver;
-    private final BankTransactionRepository bankTransactionRepository;
 
-    public AnalyzedStatementDto readCsv(MultipartFile file, Bank bank) {
+    public List<BankTransaction> readCsv(MultipartFile file, Bank bank, String source) {
         List<BankTransaction> bankTransactions = new ArrayList<>();
         var bankProperties = accountStatementFileProperties.banks()
                 .get(bank);
         var parser = new CSVParserBuilder().withSeparator(bankProperties.delimiter()
-                        .getDelimiter())
+                        .getCharacter())
                 .build();
 
         try (Reader reader = new InputStreamReader(file.getInputStream()); CSVReader csvReader = new CSVReaderBuilder(
@@ -59,16 +49,13 @@ public class CsvReaderService {
             while ((dataRow = csvReader.readNext()) != null) {
                 var entity = rowToTransactionMapper.map(dataRow, bank);
                 if (entity != null) {
+                    entity.setSource(source);
                     bankTransactions.add(entity);
+                    entity.setTransactionHash(entity.generateDbHashCode());
                 }
             }
             log.info("Read {} rows from csv file", bankTransactions.size());
-            categoryResolver.enrichWithCategories(bankTransactions, bank);
-            bankTransactionRepository.saveAll(bankTransactions);
-            log.info("Read {} rows with categories:", bankTransactions.stream()
-                    .filter(bankTransaction -> bankTransaction.getCategory() != null)
-                    .toList()
-                    .size());
+            return bankTransactions;
 
 
         } catch (IOException e) {
@@ -76,32 +63,6 @@ public class CsvReaderService {
         } catch (CsvException e) {
             throw new IllegalArgumentException("CSV file is not valid");
         }
-        return buildResponse(bankTransactions);
-    }
-
-    private AnalyzedStatementDto buildResponse(List<BankTransaction> bankTransactions) {
-        var response = new LinkedHashMap<String, CategoryDto>();
-        var summary = new LinkedHashMap<String, SummaryDto>();
-        var transactionsByCategory = bankTransactions.stream()
-                .collect(Collectors.groupingBy(BankTransaction::getCategory));
-        for (String category : transactionsByCategory.keySet()) {
-            var sum = transactionsByCategory.get(category)
-                    .stream()
-                    .reduce(BigDecimal.ZERO, (a, b) -> a.add(b.getAmount()), BigDecimal::add);
-            response.putIfAbsent(category, new CategoryDto(sum, transactionsByCategory.get(category)));
-            summary.putIfAbsent(category, new SummaryDto(transactionsByCategory.get(category)
-                    .size(), sum));
-        }
-        var sortedSummary = summary.entrySet()
-                .stream()
-                .sorted(Map.Entry.comparingByKey()) // natural order of keys
-                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (oldValue, newValue) -> oldValue,
-                        LinkedHashMap::new));
-
-        return AnalyzedStatementDto.builder()
-                .summary(sortedSummary)
-                .transactionsByCategory(response)
-                .build();
     }
 
 }

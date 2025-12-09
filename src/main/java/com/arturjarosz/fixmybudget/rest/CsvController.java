@@ -1,7 +1,7 @@
 package com.arturjarosz.fixmybudget.rest;
 
 import com.arturjarosz.fixmybudget.application.Bank;
-import com.arturjarosz.fixmybudget.application.CsvService;
+import com.arturjarosz.fixmybudget.application.CsvApplicationService;
 import com.arturjarosz.fixmybudget.dto.AnalyzedStatementDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -14,13 +14,19 @@ import org.springframework.web.multipart.MultipartFile;
 
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/api/csv")
+@RequestMapping("/api/bank-transactions")
 public class CsvController {
-    private final CsvService csvService;
+    private final CsvApplicationService csvApplicationService;
 
     @PostMapping("/upload")
-    ResponseEntity<AnalyzedStatementDto> readCsv(@RequestParam("file") MultipartFile file, @NonNull  @RequestParam("bank") Bank bank) {
-        return ResponseEntity.ok(csvService.readCsv(file, bank));
+    ResponseEntity<AnalyzedStatementDto> readCsv(@RequestParam("file") MultipartFile file,
+            @NonNull @RequestParam("bank") Bank bank, @NonNull @RequestParam("source") String source) {
+        return ResponseEntity.ok(csvApplicationService.processCsv(file, bank, source));
+    }
+
+    @PostMapping("/calculate-categories")
+    ResponseEntity<AnalyzedStatementDto> calculateCategories(@RequestParam("bank") Bank bank) {
+        return ResponseEntity.ok(csvApplicationService.calculateCategories(bank));
     }
 
 }

@@ -27,6 +27,9 @@ public class RowToTransactionMapper {
     }
 
     public BankTransaction map(String[] rowFields, Bank bank) {
+        var bankFileProperties = accountStatementFileProperties.banks()
+                .get(bank);
+
         if (!(rowFields.length == accountStatementFileProperties.banks()
                 .get(bank)
                 .headers()
@@ -44,7 +47,8 @@ public class RowToTransactionMapper {
             if (fieldTypes == null || fieldTypes.isEmpty()) {
                 continue;
             }
-            var trimmedFiled = trimTrailingCharacter(rowFields[i], ',');
+            var trimmedFiled = trimTrailingCharacter(rowFields[i], bankFileProperties.trailingCharacter()
+                    .getCharacter());
             for (FieldType fieldType : fieldTypes) {
                 var provider = fieldProviderByFieldType.get(fieldType);
                 if (provider != null) {

@@ -52,6 +52,9 @@ public class BankTransaction {
     @Column(name = "CATEGORY")
     private String category;
 
+    @Column(name = "CATEGORY_OVERRIDDEN")
+    private Boolean categoryOverridden;
+
     @EqualsAndHashCode.Include
     @Column(name = "DETAILS")
     private String details;

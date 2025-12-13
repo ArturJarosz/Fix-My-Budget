@@ -33,6 +33,9 @@ databaseChangeLog:
                   constraints:
                     nullable: false
               - column:
+                  name: "CATEGORY_OVERRIDDEN"
+                  type: "${boolean.type}"
+              - column:
                   name: "DETAILS"
                   type: "VARCHAR2(300 ${char.unit})"
                   constraints:
@@ -51,7 +54,7 @@ databaseChangeLog:
                   type: "VARCHAR2(32 ${char.unit})"
               - column:
                   name: "SOURCE"
-                  type: VARCHAR2(40 ${char.unit})
+                  type: "VARCHAR2(40 ${char.unit})"
               - column:
                   name: "TRANSACTION_HASH"
                   type: "VARCHAR2(64 ${char.unit})"

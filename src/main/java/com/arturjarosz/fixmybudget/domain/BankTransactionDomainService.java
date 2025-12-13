@@ -1,12 +1,14 @@
 package com.arturjarosz.fixmybudget.domain;
 
 import com.arturjarosz.fixmybudget.application.Bank;
+import com.arturjarosz.fixmybudget.application.OverrideCategoryDto;
 import com.arturjarosz.fixmybudget.domain.category.CategoryResolver;
 import com.arturjarosz.fixmybudget.domain.model.BankTransaction;
 import com.arturjarosz.fixmybudget.domain.repository.BankTransactionRepository;
 import com.arturjarosz.fixmybudget.dto.AnalyzedStatementDto;
 import com.arturjarosz.fixmybudget.dto.CategoryDto;
 import com.arturjarosz.fixmybudget.dto.SummaryDto;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -21,13 +23,13 @@ import java.util.stream.Collectors;
 @Slf4j
 @RequiredArgsConstructor
 @Service
-public class CsvDomainService {
+public class BankTransactionDomainService {
 
     private final CategoryResolver categoryResolver;
     private final BankTransactionRepository bankTransactionRepository;
     private final CsvReaderService csvReaderService;
 
-    public AnalyzedStatementDto readCsv(MultipartFile file, Bank bank, String source) {
+    public AnalyzedStatementDto processCsv(MultipartFile file, Bank bank, String source) {
         var bankTransactions = csvReaderService.readCsv(file, bank, source);
 
         categoryResolver.enrichWithCategories(bankTransactions, bank);
@@ -47,6 +49,9 @@ public class CsvDomainService {
     public AnalyzedStatementDto calculateCategories(Bank bank) {
         var bankTransactions = bankTransactionRepository.findAll();
 
+        bankTransactions = bankTransactions.stream()
+                .filter(bankTransaction -> !bankTransaction.getCategoryOverridden())
+                .toList();
         categoryResolver.enrichWithCategories(bankTransactions, bank);
 
         return buildResponse(bankTransactions);
@@ -75,5 +80,18 @@ public class CsvDomainService {
                 .summary(sortedSummary)
                 .transactionsByCategory(response)
                 .build();
+    }
+
+    public BankTransaction overrideCategory(Long bankTransactionId, OverrideCategoryDto overrideCategoryDto) {
+        var maybeBankTransaction = bankTransactionRepository.findById(bankTransactionId);
+        if (maybeBankTransaction.isEmpty()) {
+            throw new EntityNotFoundException("Bank transaction with id " + bankTransactionId + " not found");
+        }
+
+        var bankTransaction = maybeBankTransaction.get();
+        bankTransaction.setCategory(overrideCategoryDto.getCategory());
+        bankTransaction.setCategoryOverridden(true);
+
+        return bankTransaction;
     }
 }

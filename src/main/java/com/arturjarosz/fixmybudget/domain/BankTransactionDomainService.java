@@ -6,7 +6,7 @@ import com.arturjarosz.fixmybudget.domain.category.CategoryResolver;
 import com.arturjarosz.fixmybudget.domain.model.BankTransaction;
 import com.arturjarosz.fixmybudget.domain.repository.BankTransactionRepository;
 import com.arturjarosz.fixmybudget.dto.AnalyzedStatementDto;
-import com.arturjarosz.fixmybudget.dto.CategoryDto;
+import com.arturjarosz.fixmybudget.dto.CategorySummaryDto;
 import com.arturjarosz.fixmybudget.dto.SummaryDto;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -58,7 +58,7 @@ public class BankTransactionDomainService {
     }
 
     private AnalyzedStatementDto buildResponse(List<BankTransaction> bankTransactions) {
-        var response = new LinkedHashMap<String, CategoryDto>();
+        var response = new LinkedHashMap<String, CategorySummaryDto>();
         var summary = new LinkedHashMap<String, SummaryDto>();
         var transactionsByCategory = bankTransactions.stream()
                 .collect(Collectors.groupingBy(BankTransaction::getCategory));
@@ -66,7 +66,7 @@ public class BankTransactionDomainService {
             var sum = transactionsByCategory.get(category)
                     .stream()
                     .reduce(BigDecimal.ZERO, (a, b) -> a.add(b.getAmount()), BigDecimal::add);
-            response.putIfAbsent(category, new CategoryDto(sum, transactionsByCategory.get(category)));
+            response.putIfAbsent(category, new CategorySummaryDto(sum, transactionsByCategory.get(category)));
             summary.putIfAbsent(category, new SummaryDto(transactionsByCategory.get(category)
                     .size(), sum));
         }

@@ -1,0 +1,28 @@
+enum TransactionType {
+    INCOME,
+    EXPENSE
+}
+
+type BankTransaction {
+    id: ID!
+    transactionDate: String!
+    transactionType: TransactionType!
+    amount: Float!
+    category: String
+    details: String
+    recipientName: String
+    senderName: String
+    senderAccount: String
+    recipientAccount: String
+}
+
+type Query {
+    bankTransaction(id: ID!): BankTransaction
+    allBankTransactions: [BankTransaction!]!
+    bankTransactionsByType(type: TransactionType!): [BankTransaction!]!
+
+}
+
+type Mutation {
+    updateBankTransactionCategory(id: ID!, category: String!): BankTransaction!
+}

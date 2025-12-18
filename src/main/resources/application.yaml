@@ -18,3 +18,14 @@ spring:
     level:
       org.springframework.graphql: DEBUG
       org.springframework.web: DEBUG
+
+  graphql:
+    graphql:
+      enabled: true
+      path: /graphiql
+    http:
+      path: /graphql
+
+
+security:
+  allowed-origins: "localhost:4200"

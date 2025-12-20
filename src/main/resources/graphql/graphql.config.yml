@@ -1,0 +1,2 @@
+schema: ../graphql/bank-transaction.graphqls
+documents: '**/*.graphql'

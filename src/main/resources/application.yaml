@@ -28,4 +28,4 @@ spring:
 
 
 security:
-  allowed-origins: "localhost:4200"
+  allowed-origins: "http://localhost:4200"

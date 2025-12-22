@@ -1,6 +1,6 @@
 package com.arturjarosz.fixmybudget.properties;
 
-import com.arturjarosz.fixmybudget.application.Bank;
+import com.arturjarosz.fixmybudget.dto.Bank;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import java.util.List;

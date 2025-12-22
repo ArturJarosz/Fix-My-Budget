@@ -28,7 +28,8 @@ public class ApplicationConfiguration {
 
     private static final List<String> HEADERS =
             List.of(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, HttpHeaders.AUTHORIZATION, HttpHeaders.CACHE_CONTROL,
-                    HttpHeaders.CONTENT_TYPE, HttpHeaders.SET_COOKIE);
+                    HttpHeaders.CONTENT_TYPE, HttpHeaders.SET_COOKIE, HttpHeaders.ACCESS_CONTROL_ALLOW_HEADERS,
+                    HttpHeaders.CONTENT_DISPOSITION);
     private static final List<String> API_METHODS =
             Arrays.asList(HttpMethod.GET.name(), HttpMethod.POST.name(), HttpMethod.PATCH.name(), HttpMethod.PUT.name(),
                     HttpMethod.DELETE.name());
@@ -58,6 +59,7 @@ public class ApplicationConfiguration {
         corsConfiguration.setAllowedHeaders(HEADERS);
         corsConfiguration.setAllowCredentials(true);
         corsConfiguration.setAllowedMethods(API_METHODS);
+        corsConfiguration.setExposedHeaders(HEADERS);
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration(MATCH_ALL, corsConfiguration);
         return source;

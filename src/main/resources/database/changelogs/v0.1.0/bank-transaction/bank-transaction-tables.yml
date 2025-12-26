@@ -56,6 +56,9 @@ databaseChangeLog:
                   name: "SOURCE"
                   type: "VARCHAR2(40 ${char.unit})"
               - column:
+                  name: "BANK"
+                  type: "VARCHAR2(40 ${char.unit})"
+              - column:
                   name: "TRANSACTION_HASH"
                   type: "VARCHAR2(64 ${char.unit})"
                   constraints:

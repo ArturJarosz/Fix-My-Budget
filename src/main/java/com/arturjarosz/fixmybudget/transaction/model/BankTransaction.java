@@ -1,5 +1,6 @@
 package com.arturjarosz.fixmybudget.transaction.model;
 
+import com.arturjarosz.fixmybudget.dto.Bank;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -78,6 +79,11 @@ public class BankTransaction {
     @EqualsAndHashCode.Include
     @Column(name = "SOURCE")
     private String source;
+
+    @Enumerated(EnumType.STRING)
+    @EqualsAndHashCode.Include
+    @Column(name = "bank")
+    private Bank bank;
 
     @Column(name = "TRANSACTION_HASH", length = 64, nullable = false)
     private String transactionHash;

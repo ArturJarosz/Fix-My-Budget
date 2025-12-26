@@ -32,6 +32,7 @@ public class BankTransactionDomainService {
 
     public AnalyzedStatementDto processCsv(MultipartFile file, Bank bank, String source) {
         var bankTransactions = csvReaderService.readCsv(file, bank, source);
+        bankTransactions.forEach(bankTransaction -> bankTransaction.setBank(bank));
 
         categoryResolver.enrichWithCategories(bankTransactions, bank);
 

@@ -1,0 +1,13 @@
+databaseChangeLog:
+  - include:
+      relativeToChangelogFile: true
+      file: "category-sequence.yml"
+  - include:
+      relativeToChangelogFile: true
+      file: "category-table.yml"
+  - include:
+      relativeToChangelogFile: true
+      file: "category-requirement-table.yml"
+  - include:
+      relativeToChangelogFile: true
+      file: "category-requirement-value-table.yml"

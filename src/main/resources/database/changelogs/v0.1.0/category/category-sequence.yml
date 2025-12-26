@@ -1,0 +1,28 @@
+databaseChangeLog:
+  - changeSet:
+      id: "create-category-sequence"
+      author: "Liquibase"
+      changes:
+        - createSequence:
+            sequenceName: "category_sequence"
+            startValue: 1
+            incrementBy: 1
+            cacheSize: 5
+  - changeSet:
+      id: "create-category-requirement-sequence"
+      author: "Liquibase"
+      changes:
+        - createSequence:
+            sequenceName: "category_requirement_sequence"
+            startValue: 1
+            incrementBy: 1
+            cacheSize: 5
+  - changeSet:
+      id: "create-category-requirement-value-sequence"
+      author: "Liquibase"
+      changes:
+        - createSequence:
+            sequenceName: "category_requirement_value_sequence"
+            startValue: 1
+            incrementBy: 1
+            cacheSize: 5

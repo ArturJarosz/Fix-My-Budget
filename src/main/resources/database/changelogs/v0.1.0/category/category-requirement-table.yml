@@ -1,0 +1,39 @@
+databaseChangeLog:
+  - changeSet:
+      author: "Liquibase"
+      id: "create-category-requirement-tables"
+      changes:
+        - createTable:
+            tableName: "CATEGORY_REQUIREMENT"
+            columns:
+              - column:
+                  name: "ID"
+                  type: "${long.type}"
+                  constraints:
+                    nullable: false
+              - column:
+                  name: "FIELD_TYPE"
+                  type: "VARCHAR2(100 ${char.unit})"
+                  constraints:
+                    nullable: false
+              - column:
+                  name: "MATCH_TYPE"
+                  type: "VARCHAR2(100 ${char.unit})"
+                  constraints:
+                    nullable: false
+              - column:
+                  name: "CATEGORY_ID"
+                  type: "${long.type}"
+                  constraints:
+                    nullable: false
+
+        - addPrimaryKey:
+            tableName: "CATEGORY_REQUIREMENT"
+            constraintName: "PK_CATEGORY_REQUIREMENT"
+            columnNames: "ID"
+        - addForeignKeyConstraint:
+            baseTableName: "CATEGORY_REQUIREMENT"
+            baseColumnNames: "CATEGORY_ID"
+            constraintName: "FK_CATEGORY"
+            referencedTableName: "CATEGORY"
+            referencedColumnNames: "ID"

@@ -5,6 +5,6 @@ databaseChangeLog:
       changes:
         - createSequence:
             sequenceName: "bank_transaction_sequence"
-            startValue: 100
+            startValue: 1
             cacheSize: 5
             incrementBy: 1

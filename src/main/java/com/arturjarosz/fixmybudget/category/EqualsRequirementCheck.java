@@ -1,6 +1,7 @@
 package com.arturjarosz.fixmybudget.category;
 
-import com.arturjarosz.fixmybudget.properties.CategoryRequirementsProperties;
+import com.arturjarosz.fixmybudget.category.model.CategoryRequirement;
+import com.arturjarosz.fixmybudget.category.model.CategoryRequirementValue;
 import com.arturjarosz.fixmybudget.properties.MatchType;
 import org.springframework.stereotype.Component;
 
@@ -9,9 +10,13 @@ import java.util.List;
 @Component
 public class EqualsRequirementCheck implements RequirementChecker {
     @Override
-    public boolean meetsRequirements(FieldToEvaluate fieldToEvaluate, CategoryRequirementsProperties requirements) {
+    public boolean meetsRequirements(FieldToEvaluate fieldToEvaluate, CategoryRequirement requirement) {
         var contains = false;
-        for (String value : requirements.values()) {
+        var values = requirement.getValues()
+                .stream()
+                .map(CategoryRequirementValue::getValue)
+                .toList();
+        for (String value : values) {
             if (fieldToEvaluate.textValue()
                     .equalsIgnoreCase(value)) {
                 contains = true;

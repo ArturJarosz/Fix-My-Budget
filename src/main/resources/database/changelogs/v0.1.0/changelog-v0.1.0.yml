@@ -2,6 +2,9 @@ databaseChangeLog:
   - include:
       relativeToChangelogFile: true
       file: "bank-transaction/changelog-bank-transaction.yml"
+  - include:
+      relativeToChangelogFile: true
+      file: "category/changelog-category.yml"
   - changeSet:
       author: "Liquibase"
       id: "tag-version-0.1.0"

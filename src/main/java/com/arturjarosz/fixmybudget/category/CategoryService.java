@@ -1,5 +1,6 @@
 package com.arturjarosz.fixmybudget.category;
 
+import com.arturjarosz.fixmybudget.category.exception.CategoryAlreadyExistsException;
 import com.arturjarosz.fixmybudget.category.model.Category;
 import com.arturjarosz.fixmybudget.category.model.CategoryRequirement;
 import com.arturjarosz.fixmybudget.category.model.CategoryRequirementValue;
@@ -10,6 +11,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -26,6 +28,50 @@ public class CategoryService {
 
     private final ObjectMapper objectMapper;
     private final CategoryRepository categoryRepository;
+
+    private static Category mergeCategoryGroup(CategoryKey key, List<Category> groupCategories) {
+        Category result = new Category();
+        // New entity, do not keep existing IDs
+        result.setId(null);
+        result.setName(key.name());
+        result.setBankName(key.bank());
+
+        List<CategoryRequirement> mergedRequirements = new ArrayList<>();
+        for (Category category : groupCategories) {
+            if (category.getRequirements() == null) {
+                continue;
+            }
+            for (CategoryRequirement req : category.getRequirements()) {
+                CategoryRequirement copy = copyRequirementWithoutIds(req);
+                mergedRequirements.add(copy);
+            }
+        }
+
+        result.setRequirements(mergedRequirements);
+        return result;
+    }
+
+    private static CategoryRequirement copyRequirementWithoutIds(CategoryRequirement original) {
+        CategoryRequirement copy = new CategoryRequirement();
+        copy.setId(null);
+        copy.setFieldType(original.getFieldType());
+        copy.setMatchType(original.getMatchType());
+
+        if (original.getValues() != null) {
+            List<CategoryRequirementValue> valuesCopy = original.getValues()
+                    .stream()
+                    .map(value -> {
+                        CategoryRequirementValue v = new CategoryRequirementValue();
+                        v.setId(null);
+                        v.setValue(value.getValue());
+                        return v;
+                    })
+                    .toList();
+            copy.setValues(valuesCopy);
+        }
+
+        return copy;
+    }
 
     public byte[] getCategoriesAsFile() {
         var categories = categoryRepository.findAll();
@@ -74,47 +120,13 @@ public class CategoryService {
         return merged;
     }
 
-    private static Category mergeCategoryGroup(CategoryKey key, List<Category> groupCategories) {
-        Category result = new Category();
-        // New entity, do not keep existing IDs
-        result.setId(null);
-        result.setName(key.name());
-        result.setBankName(key.bank());
-
-        List<CategoryRequirement> mergedRequirements = new ArrayList<>();
-        for (Category category : groupCategories) {
-            if (category.getRequirements() == null) {
-                continue;
-            }
-            for (CategoryRequirement req : category.getRequirements()) {
-                CategoryRequirement copy = copyRequirementWithoutIds(req);
-                mergedRequirements.add(copy);
-            }
+    @Transactional
+    public Category createCategory(Category category) {
+        if (this.categoryRepository.existsByNameAndBankName(category.getName(), category.getBankName())) {
+            throw new CategoryAlreadyExistsException(
+                    "Category with name '" + category.getName() + "' and bank '" + category.getBankName() + "' already exists.");
         }
-
-        result.setRequirements(mergedRequirements);
-        return result;
-    }
-
-    private static CategoryRequirement copyRequirementWithoutIds(CategoryRequirement original) {
-        CategoryRequirement copy = new CategoryRequirement();
-        copy.setId(null);
-        copy.setFieldType(original.getFieldType());
-        copy.setMatchType(original.getMatchType());
-
-        if (original.getValues() != null) {
-            List<CategoryRequirementValue> valuesCopy = original.getValues().stream()
-                    .map(value -> {
-                        CategoryRequirementValue v = new CategoryRequirementValue();
-                        v.setId(null);
-                        v.setValue(value.getValue());
-                        return v;
-                    })
-                    .toList();
-            copy.setValues(valuesCopy);
-        }
-
-        return copy;
+        return this.categoryRepository.save(category);
     }
 
     private record CategoryKey(String name, Bank bank) {

@@ -21,6 +21,11 @@ databaseChangeLog:
                   type: "VARCHAR2(60 ${char.unit})"
                   constraints:
                     nullable: false
+              - column:
+                  name: "COLOR"
+                  type: "VARCHAR2(10 ${char.unit})"
+                  constraints:
+                    nullable: false
         - addPrimaryKey:
             tableName: "CATEGORY"
             constraintName: "PK_CATEGORY"

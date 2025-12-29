@@ -80,6 +80,7 @@ account-statement:
 #   ENDS_WITH
 
 category:
+  defaultColor: "#444444"
   mapping:
     ALIOR:
       - name: Eating out

@@ -6,6 +6,7 @@ import com.arturjarosz.fixmybudget.category.model.CategoryRequirement;
 import com.arturjarosz.fixmybudget.category.model.CategoryRequirementValue;
 import com.arturjarosz.fixmybudget.category.repository.CategoryRepository;
 import com.arturjarosz.fixmybudget.dto.Bank;
+import com.arturjarosz.fixmybudget.properties.CategoryProperties;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -28,6 +29,7 @@ public class CategoryService {
 
     private final ObjectMapper objectMapper;
     private final CategoryRepository categoryRepository;
+    private final CategoryProperties categoryProperties;
 
     private static Category mergeCategoryGroup(CategoryKey key, List<Category> groupCategories) {
         Category result = new Category();
@@ -94,6 +96,14 @@ public class CategoryService {
         categoryRepository.deleteAll();
 
         importedCategories = mergeDuplicateCategories(importedCategories);
+
+        // making sure that some color is set for each category
+
+        importedCategories.forEach(category -> {
+            if (category.getColor() == null || category.getColor().isEmpty()) {
+                category.setColor(categoryProperties.defaultColor());
+            }
+        });
 
         categoryRepository.saveAll(importedCategories);
     }

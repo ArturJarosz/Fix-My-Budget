@@ -7,5 +7,5 @@ import java.util.List;
 import java.util.Map;
 
 @ConfigurationProperties(prefix = "category")
-public record CategoryProperties(Map<Bank, List<CategoryEntryProperties>> mapping) {
+public record CategoryProperties(Map<Bank, List<CategoryEntryProperties>> mapping, String defaultColor) {
 }

@@ -49,6 +49,8 @@ public class Category {
     @JoinColumn(name = "CATEGORY_ID", nullable = false)
     List<CategoryRequirement> requirements;
 
+    @Column(name = "COLOR")
+    private String color;
 
     @Override
     public boolean equals(Object o) {

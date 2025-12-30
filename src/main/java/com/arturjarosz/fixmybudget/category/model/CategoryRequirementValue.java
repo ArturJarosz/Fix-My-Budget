@@ -23,7 +23,6 @@ import lombok.Setter;
 @Getter
 public class CategoryRequirementValue {
 
-    @JsonIgnore
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "category_requirement_value_sequence_generator")
     private Long id;

@@ -21,6 +21,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -47,7 +48,7 @@ public class Category {
 
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     @JoinColumn(name = "CATEGORY_ID", nullable = false)
-    List<CategoryRequirement> requirements;
+    List<CategoryRequirement> requirements = new ArrayList<>();
 
     @Column(name = "COLOR")
     private String color;

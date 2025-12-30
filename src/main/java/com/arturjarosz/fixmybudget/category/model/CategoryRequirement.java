@@ -21,6 +21,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -33,7 +34,6 @@ import java.util.List;
 @Getter
 public class CategoryRequirement {
 
-    @JsonIgnore
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "category_requirement_sequence_generator")
     private Long id;
@@ -48,5 +48,5 @@ public class CategoryRequirement {
 
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     @JoinColumn(name = "CATEGORY_REQUIREMENT_ID", nullable = false)
-    List<CategoryRequirementValue> values;
+    List<CategoryRequirementValue> values = new ArrayList<>();
 }

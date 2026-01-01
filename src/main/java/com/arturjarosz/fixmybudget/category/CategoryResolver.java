@@ -8,6 +8,7 @@ import com.arturjarosz.fixmybudget.field.FieldProvider;
 import com.arturjarosz.fixmybudget.properties.FieldType;
 import com.arturjarosz.fixmybudget.properties.MatchType;
 import com.arturjarosz.fixmybudget.transaction.model.BankTransaction;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -15,6 +16,7 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Component
 public class CategoryResolver {
     private static final String UNCATEGORIZED = "UNCATEGORIZED";
@@ -36,7 +38,6 @@ public class CategoryResolver {
         for (BankTransaction bankTransaction : transactions) {
             var category = resolveCategory(bankTransaction, bank);
             bankTransaction.setCategory(category);
-
         }
     }
 
@@ -53,7 +54,7 @@ public class CategoryResolver {
                 var fieldToEvaluate = fieldProviderByFieldType.get(requirement.getFieldType())
                         .getFieldToEvaluate(bankTransaction);
                 requirementsMet = checker.meetsRequirements(fieldToEvaluate, requirement);
-                if (!requirementsMet) {
+                if (requirementsMet) {
                     break;
                 }
             }

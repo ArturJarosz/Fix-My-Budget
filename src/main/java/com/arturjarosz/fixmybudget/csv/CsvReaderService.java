@@ -29,6 +29,7 @@ public class CsvReaderService {
     private final RowToTransactionMapper rowToTransactionMapper;
 
     public List<BankTransaction> readCsv(MultipartFile file, Bank bank, String source) {
+        log.info("Reading CSV file for bank {} from source {}.", bank, source);
         List<BankTransaction> bankTransactions = new ArrayList<>();
         var bankProperties = accountStatementFileProperties.banks()
                 .get(bank);

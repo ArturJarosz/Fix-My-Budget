@@ -4,6 +4,7 @@ import com.arturjarosz.fixmybudget.dto.Bank;
 import com.arturjarosz.fixmybudget.transaction.BankTransactionApplicationService;
 import com.arturjarosz.fixmybudget.dto.OverrideCategoryDto;
 import com.arturjarosz.fixmybudget.dto.AnalyzedStatementDto;
+import com.arturjarosz.fixmybudget.transaction.dto.RecalculateCategoriesTransactionsDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.lang.NonNull;
@@ -28,8 +29,8 @@ public class BankTransactionController {
     }
 
     @PostMapping("/calculate-categories")
-    ResponseEntity<AnalyzedStatementDto> calculateCategories(@RequestParam("bank") Bank bank) {
-        return ResponseEntity.ok(bankTransactionApplicationService.calculateCategories(bank));
+    ResponseEntity<AnalyzedStatementDto> calculateCategories(@RequestBody RecalculateCategoriesTransactionsDto recalculateRequest) {
+        return ResponseEntity.ok(bankTransactionApplicationService.calculateCategories(recalculateRequest.bank()));
     }
 
     @PostMapping("/{bankTransactionId}/override-category")
@@ -37,5 +38,4 @@ public class BankTransactionController {
             @RequestBody OverrideCategoryDto overrideCategoryDto) {
         return ResponseEntity.ok(bankTransactionApplicationService.overrideCategory(bankTransactionId, overrideCategoryDto));
     }
-
 }

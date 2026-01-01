@@ -34,7 +34,6 @@ import java.util.Objects;
 @Getter
 public class Category {
 
-    @JsonIgnore
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "category_sequence_generator")
     private Long id;
@@ -62,5 +61,13 @@ public class Category {
     @Override
     public int hashCode() {
         return Objects.hash(name, bankName);
+    }
+
+    @Override
+    public String toString() {
+        return "Category{" +
+                "name='" + name + '\'' +
+                ", bankName=" + bankName +
+                '}';
     }
 }

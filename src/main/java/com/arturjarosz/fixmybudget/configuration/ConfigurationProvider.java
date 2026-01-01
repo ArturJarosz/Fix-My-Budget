@@ -17,6 +17,7 @@ public class ConfigurationProvider {
     private final AccountStatementFileProperties accountStatementFileProperties;
 
     public ConfigurationResponse getConfigurationResponse() {
+        log.info("Getting configuration response.");
         var banks = accountStatementFileProperties.banks()
                 .keySet()
                 .stream()

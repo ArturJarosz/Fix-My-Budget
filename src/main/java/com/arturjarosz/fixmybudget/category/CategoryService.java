@@ -12,6 +12,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -25,6 +26,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+@Slf4j
 @RequiredArgsConstructor
 @Service
 public class CategoryService {
@@ -33,6 +35,89 @@ public class CategoryService {
     private final CategoryRepository categoryRepository;
     private final CategoryProperties categoryProperties;
     private final BankTransactionApplicationService bankTransactionApplicationService;
+
+    public byte[] getCategoriesAsFile() {
+        log.info("Exporting categories to file.");
+        var categories = categoryRepository.findAll();
+        try {
+            return objectMapper.writeValueAsBytes(categories);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void saveCategories(MultipartFile file) {
+        log.info("Importing categories from file.");
+        List<Category> importedCategories = null;
+        try {
+            importedCategories = objectMapper.readValue(file.getInputStream(), new TypeReference<List<Category>>() {
+            });
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        categoryRepository.deleteAll();
+
+        importedCategories = mergeDuplicateCategories(importedCategories);
+
+        // making sure that some color is set for each category
+
+        importedCategories.forEach(category -> {
+            if (category.getColor() == null || category.getColor()
+                    .isEmpty()) {
+                category.setColor(categoryProperties.defaultColor());
+            }
+        });
+
+        categoryRepository.saveAll(importedCategories);
+        bankTransactionApplicationService.calculateCategories(importedCategories.get(0).getBankName());
+    }
+
+    public List<Category> getCategories() {
+        log.info("Loading all categories.");
+        return categoryRepository.findAll();
+    }
+
+    @Transactional
+    public Category createCategory(Category category) {
+        log.info("Creating new category {}.", category);
+        if (this.categoryRepository.existsByNameAndBankName(category.getName(), category.getBankName())) {
+            throw new CategoryAlreadyExistsException(
+                    "Category with name '" + category.getName() + "' and bank '" + category.getBankName() + "' already exists.");
+        }
+        this.bankTransactionApplicationService.calculateCategories(category.getBankName());
+        return this.categoryRepository.save(category);
+    }
+
+    @Transactional
+    public Category updateCategory(Long id, Category incomingCategory) {
+        log.info("Updating category with id {}.", id);
+        var categoryToUpdate = this.categoryRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Category with id " + id + " not found"));
+
+        // Update simple fields
+        categoryToUpdate.setName(incomingCategory.getName());
+        categoryToUpdate.setBankName(incomingCategory.getBankName());
+        categoryToUpdate.setColor(incomingCategory.getColor());
+
+        // Ensure requirements list is initialized
+        if (categoryToUpdate.getRequirements() == null) {
+            categoryToUpdate.setRequirements(new ArrayList<>());
+        }
+
+        mergeRequirements(categoryToUpdate.getRequirements(), incomingCategory.getRequirements());
+
+        // Optionally, enforce uniqueness
+        if (this.categoryRepository.existsByNameAndBankName(categoryToUpdate.getName(), categoryToUpdate.getBankName())
+                && !Objects.equals(categoryToUpdate.getId(), id)) {
+            throw new CategoryAlreadyExistsException(
+                    "Category with name '" + categoryToUpdate.getName()
+                            + "' and bank '" + categoryToUpdate.getBankName()
+                            + "' already exists.");
+        }
+        this.bankTransactionApplicationService.calculateCategories(incomingCategory.getBankName());
+        return this.categoryRepository.save(categoryToUpdate);
+    }
 
     private static Category mergeCategoryGroup(CategoryKey key, List<Category> groupCategories) {
         Category result = new Category();
@@ -79,46 +164,7 @@ public class CategoryService {
         return copy;
     }
 
-    public byte[] getCategoriesAsFile() {
-        var categories = categoryRepository.findAll();
-        try {
-            return objectMapper.writeValueAsBytes(categories);
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public void saveCategories(MultipartFile file) {
-        List<Category> importedCategories = null;
-        try {
-            importedCategories = objectMapper.readValue(file.getInputStream(), new TypeReference<List<Category>>() {
-            });
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-
-        categoryRepository.deleteAll();
-
-        importedCategories = mergeDuplicateCategories(importedCategories);
-
-        // making sure that some color is set for each category
-
-        importedCategories.forEach(category -> {
-            if (category.getColor() == null || category.getColor()
-                    .isEmpty()) {
-                category.setColor(categoryProperties.defaultColor());
-            }
-        });
-
-        categoryRepository.saveAll(importedCategories);
-        bankTransactionApplicationService.calculateCategories(importedCategories.get(0).getBankName());
-    }
-
-    public List<Category> getCategories() {
-        return categoryRepository.findAll();
-    }
-
-    public List<Category> mergeDuplicateCategories(List<Category> categories) {
+    private List<Category> mergeDuplicateCategories(List<Category> categories) {
         if (categories == null || categories.isEmpty()) {
             return List.of();
         }
@@ -134,45 +180,6 @@ public class CategoryService {
         }
 
         return merged;
-    }
-
-    @Transactional
-    public Category createCategory(Category category) {
-        if (this.categoryRepository.existsByNameAndBankName(category.getName(), category.getBankName())) {
-            throw new CategoryAlreadyExistsException(
-                    "Category with name '" + category.getName() + "' and bank '" + category.getBankName() + "' already exists.");
-        }
-        this.bankTransactionApplicationService.calculateCategories(category.getBankName());
-        return this.categoryRepository.save(category);
-    }
-
-    @Transactional
-    public Category updateCategory(Long id, Category incomingCategory) {
-        var categoryToUpdate = this.categoryRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Category with id " + id + " not found"));
-
-        // Update simple fields
-        categoryToUpdate.setName(incomingCategory.getName());
-        categoryToUpdate.setBankName(incomingCategory.getBankName());
-        categoryToUpdate.setColor(incomingCategory.getColor());
-
-        // Ensure requirements list is initialized
-        if (categoryToUpdate.getRequirements() == null) {
-            categoryToUpdate.setRequirements(new ArrayList<>());
-        }
-
-        mergeRequirements(categoryToUpdate.getRequirements(), incomingCategory.getRequirements());
-
-        // Optionally, enforce uniqueness
-        if (this.categoryRepository.existsByNameAndBankName(categoryToUpdate.getName(), categoryToUpdate.getBankName())
-                && !Objects.equals(categoryToUpdate.getId(), id)) {
-            throw new CategoryAlreadyExistsException(
-                    "Category with name '" + categoryToUpdate.getName()
-                            + "' and bank '" + categoryToUpdate.getBankName()
-                            + "' already exists.");
-        }
-        this.bankTransactionApplicationService.calculateCategories(incomingCategory.getBankName());
-        return this.categoryRepository.save(categoryToUpdate);
     }
 
     private void mergeRequirements(List<CategoryRequirement> existingRequirements,

@@ -31,6 +31,7 @@ public class BankTransactionDomainService {
     private final CsvReaderService csvReaderService;
 
     public AnalyzedStatementDto processCsv(MultipartFile file, Bank bank, String source) {
+        log.info(" Processing CSV file for bank {} from source {}.", bank, source);
         var bankTransactions = csvReaderService.readCsv(file, bank, source);
         bankTransactions.forEach(bankTransaction -> bankTransaction.setBank(bank));
 
@@ -50,9 +51,11 @@ public class BankTransactionDomainService {
 
     public AnalyzedStatementDto calculateCategories(Bank bank) {
         var bankTransactions = bankTransactionRepository.findAll();
+        log.info("Calculating [{}] categories for bank [{}] transactions", bank.name(), bankTransactions.size());
 
         bankTransactions = bankTransactions.stream()
-                .filter(bankTransaction -> !bankTransaction.getCategoryOverridden())
+                .filter(bankTransaction -> bankTransaction.getBank().equals(bank))
+                .filter(bankTransaction -> bankTransaction.getCategoryOverridden() == null || !bankTransaction.getCategoryOverridden())
                 .toList();
         categoryResolver.enrichWithCategories(bankTransactions, bank);
 
@@ -85,6 +88,7 @@ public class BankTransactionDomainService {
     }
 
     public BankTransaction overrideCategory(Long bankTransactionId, OverrideCategoryDto overrideCategoryDto) {
+        log.info(" Overriding category for bank transaction {}.", bankTransactionId);
         var maybeBankTransaction = bankTransactionRepository.findById(bankTransactionId);
         if (maybeBankTransaction.isEmpty()) {
             throw new EntityNotFoundException("Bank transaction with id " + bankTransactionId + " not found");

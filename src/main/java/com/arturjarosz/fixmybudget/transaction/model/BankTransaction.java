@@ -122,4 +122,14 @@ public class BankTransaction {
             throw new RuntimeException("Failed to compute hash", e);
         }
     }
+
+    @Override
+    public String toString() {
+        return "BankTransaction{" +
+                "transactionType=" + transactionType +
+                ", details='" + details + '\'' +
+                ", source='" + source + '\'' +
+                ", bank=" + bank +
+                '}';
+    }
 }

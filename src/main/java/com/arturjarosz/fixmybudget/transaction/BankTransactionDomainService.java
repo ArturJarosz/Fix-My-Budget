@@ -31,7 +31,7 @@ public class BankTransactionDomainService {
     private final CsvReaderService csvReaderService;
 
     public AnalyzedStatementDto processCsv(MultipartFile file, Bank bank, String source) {
-        log.info(" Processing CSV file for bank {} from source {}.", bank, source);
+        log.info("Processing CSV file for bank {} from source {}.", bank, source);
         var bankTransactions = csvReaderService.readCsv(file, bank, source);
         bankTransactions.forEach(bankTransaction -> bankTransaction.setBank(bank));
 

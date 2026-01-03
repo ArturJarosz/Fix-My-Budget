@@ -60,8 +60,6 @@ public class CategoryService {
 
         importedCategories = mergeDuplicateCategories(importedCategories);
 
-        // making sure that some color is set for each category
-
         importedCategories.forEach(category -> {
             if (category.getColor() == null || category.getColor()
                     .isEmpty()) {
@@ -85,8 +83,9 @@ public class CategoryService {
             throw new CategoryAlreadyExistsException(
                     "Category with name '" + category.getName() + "' and bank '" + category.getBankName() + "' already exists.");
         }
+        var newCategory = this.categoryRepository.save(category);
         this.bankTransactionApplicationService.calculateCategories(category.getBankName());
-        return this.categoryRepository.save(category);
+        return newCategory;
     }
 
     @Transactional
@@ -121,7 +120,6 @@ public class CategoryService {
 
     private static Category mergeCategoryGroup(CategoryKey key, List<Category> groupCategories) {
         Category result = new Category();
-        // New entity, do not keep existing IDs
         result.setId(null);
         result.setName(key.name());
         result.setBankName(key.bank());
@@ -157,7 +155,7 @@ public class CategoryService {
                         v.setValue(value.getValue());
                         return v;
                     })
-                    .toList();
+                    .collect(Collectors.toCollection(ArrayList::new));
             copy.setValues(valuesCopy);
         }
 

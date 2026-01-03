@@ -35,17 +35,18 @@ public class CategoryResolver {
     }
 
     public void enrichWithCategories(List<BankTransaction> transactions, Bank bank) {
-        for (BankTransaction bankTransaction : transactions) {
-            var category = resolveCategory(bankTransaction, bank);
-            bankTransaction.setCategory(category);
-        }
-    }
-
-    String resolveCategory(BankTransaction bankTransaction, Bank bank) {
+        log.info("Enriching [{}] bank transactions [{}] with categories.", bank.name(), transactions.size());
         var categories = categoryRepository.findAll()
                 .stream()
                 .filter(c -> c.getBankName() == bank)
                 .toList();
+        for (BankTransaction bankTransaction : transactions) {
+            var category = resolveCategory(bankTransaction, bank, categories);
+            bankTransaction.setCategory(category);
+        }
+    }
+
+    String resolveCategory(BankTransaction bankTransaction, Bank bank, List<Category> categories) {
         String resolvedCategory = UNCATEGORIZED;
         for (Category category : categories) {
             var requirementsMet = true;

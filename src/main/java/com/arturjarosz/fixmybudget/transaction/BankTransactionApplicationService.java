@@ -18,7 +18,7 @@ public class BankTransactionApplicationService {
     private final BankTransactionDomainService bankTransactionDomainService;
 
     public AnalyzedStatementDto processCsv(MultipartFile file, Bank bank, String source) {
-        log.info("Processing CSV file for bank {} from source {}.", bank, source);
+        log.info("Loading CSV file for bank {} from source {}.", bank, source);
         fileValidator.checkIfFileIsNotEmpty(file);
         fileValidator.checkIfFileIsCsv(file);
 

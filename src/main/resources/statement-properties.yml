@@ -42,7 +42,7 @@ account-statement:
         - name: "Numer rachunku odbiorcy"
           types:
             - RECIPIENT_ACCOUNT
-      skip-lines: 1
+      skip-first-lines: 1
       delimiter: SEMICOLON
       trailing-character: COMA
       has-headers: true
@@ -69,9 +69,50 @@ account-statement:
             - TRANSACTION_TYPE
         - name: "Saldo"
         - name: "Pozycja historii"
-      skip-lines: 1
+      skip-first-lines: 1
       has-headers: false
       delimiter: SEMICOLON
+    ING:
+      should-clean-recipient-sender: true
+      skip-first-lines: 19
+      skip-last-values: 4
+      date-format: "uuuu-MM-dd"
+      delimiter: SEMICOLON
+      has-headers: true
+      trailing-character: SEMICOLON
+      charset-name: "windows-1250"
+      headers:
+        - name: "Data transakcji"
+          types:
+            - TRANSACTION_DATE
+        - name: "Data księgowania"
+        - name: "Dane kontrahenta"
+          types:
+            - SENDER_NAME
+            - RECIPIENT_NAME
+        - name: "Tytuł"
+          types:
+            - TRANSACTION_DETAILS
+        - name: "Nr rachunku"
+          types:
+            - RECIPIENT_ACCOUNT
+            - SENDER_ACCOUNT
+        - name: "Nazwa banku"
+        - name: "Szczegóły"
+        - name: "Nr transakcji"
+        - name: "Kwota transakcji (waluta rachunku)"
+          types:
+            - TRANSACTION_AMOUNT
+            - TRANSACTION_TYPE
+          fallbackName: "Kwota blokady/zwolnienie blokady"
+        - name: "Waluta"
+        - name: "Kwota blokady/zwolnienie blokady"
+        - name: "Waluta"
+        - name: "Kwota płatności w walucie"
+        - name: "Waluta"
+        - name: "Konto"
+        - name: "Saldo po transakcji"
+        - name: "Waluta"
 
 # available match types:
 #   EQUALS

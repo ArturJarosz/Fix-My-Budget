@@ -3,19 +3,9 @@ package com.arturjarosz.fixmybudget.csv.validator;
 import com.arturjarosz.fixmybudget.dto.Bank;
 import com.arturjarosz.fixmybudget.properties.AccountStatementFileProperties;
 import com.arturjarosz.fixmybudget.properties.HeaderProperties;
-import com.opencsv.CSVParserBuilder;
-import com.opencsv.CSVReader;
-import com.opencsv.CSVReaderBuilder;
-import com.opencsv.exceptions.CsvException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import org.springframework.web.multipart.MultipartFile;
-
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.util.Arrays;
 import java.util.List;
 
 @Slf4j
@@ -24,35 +14,18 @@ import java.util.List;
 public class CsvValidator {
     private final AccountStatementFileProperties accountStatementFileProperties;
 
-    public void checkFileHeaders(MultipartFile file, Bank bank) {
+    public void checkFileHeaders(List<String> headers, Bank bank) {
         var bankFileProperties = accountStatementFileProperties.banks()
                 .get(bank);
-
-        try (Reader reader = new InputStreamReader(file.getInputStream()); CSVReader csvReader = new CSVReaderBuilder(
-                reader).withSkipLines(bankFileProperties.skipLines())
-                .withCSVParser(new CSVParserBuilder().withSeparator(bankFileProperties.delimiter()
-                                .getCharacter())
-                        .build())
-                .build()) {
-            var headers = Arrays.stream(csvReader.readNext())
-                    .map(header -> trimTrailingCharacter(header, bankFileProperties.trailingCharacter()
-                            .getCharacter()))
-                    .toList();
-            if (headers.isEmpty()) {
-                throw new IllegalArgumentException("CSV headers are empty");
-            }
-
-            var configuredFileHeaders = bankFileProperties.headers()
-                    .stream()
-                    .map(HeaderProperties::name)
-                    .toList();
-            validateHeaders(headers, configuredFileHeaders);
-
-        } catch (IOException e) {
-            throw new IllegalArgumentException("File is not csv or cannot be read");
-        } catch (CsvException e) {
-            throw new IllegalArgumentException("CSV file is not valid");
+        if (headers.isEmpty()) {
+            throw new IllegalArgumentException("CSV headers are empty");
         }
+
+        var configuredFileHeaders = bankFileProperties.headers()
+                .stream()
+                .map(HeaderProperties::name)
+                .toList();
+        validateHeaders(headers, configuredFileHeaders);
     }
 
     private void validateHeaders(List<String> fileHeaders, List<String> expectedHeaders) {
@@ -70,17 +43,5 @@ public class CsvValidator {
                                 i + 1, expectedHeaders.get(i), fileHeaders.get(i)));
             }
         }
-    }
-
-    private String trimTrailingCharacter(String str, char delimiterChar) {
-        while (str.endsWith(String.valueOf(delimiterChar))) {
-            str = str.substring(0, str.length() - 1);
-        }
-
-        int index = str.length() - 1;
-        while (str.charAt(index) == delimiterChar) {
-            index--;
-        }
-        return str.substring(0, index + 1);
     }
 }

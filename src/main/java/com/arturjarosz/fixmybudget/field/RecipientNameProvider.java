@@ -1,6 +1,7 @@
 package com.arturjarosz.fixmybudget.field;
 
 import com.arturjarosz.fixmybudget.category.FieldToEvaluate;
+import com.arturjarosz.fixmybudget.dto.Bank;
 import com.arturjarosz.fixmybudget.transaction.model.BankTransaction;
 import com.arturjarosz.fixmybudget.properties.FieldType;
 import org.springframework.stereotype.Component;
@@ -8,7 +9,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class RecipientNameProvider implements FieldProvider {
     @Override
-    public void enrichTransaction(BankTransaction transaction, String value) {
+    public void enrichTransaction(BankTransaction transaction, String value, String fallbackValue, Bank bank) {
         transaction.setRecipientName(value);
     }
 

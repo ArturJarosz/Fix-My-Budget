@@ -17,6 +17,9 @@ public class ContainsRequirementCheck implements RequirementChecker {
                 .map(CategoryRequirementValue::getValue)
                 .toList();
         for (String value : values) {
+            if (fieldToEvaluate.textValue() == null) {
+                continue;
+            }
             if (fieldToEvaluate.textValue()
                     .toLowerCase()
                     .contains(value.toLowerCase())) {

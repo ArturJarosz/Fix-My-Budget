@@ -1,6 +1,7 @@
 package com.arturjarosz.fixmybudget.field;
 
 import com.arturjarosz.fixmybudget.category.FieldToEvaluate;
+import com.arturjarosz.fixmybudget.dto.Bank;
 import com.arturjarosz.fixmybudget.transaction.model.BankTransaction;
 import com.arturjarosz.fixmybudget.properties.FieldType;
 import org.springframework.stereotype.Component;
@@ -17,13 +18,18 @@ public class TransactionAmountProvider implements FieldProvider {
     DecimalFormatSymbols symbols = new DecimalFormatSymbols(Locale.of("PL"));
 
     @Override
-    public void enrichTransaction(BankTransaction transaction, String value) {
+    public void enrichTransaction(BankTransaction transaction, String value, String fallbackValue, Bank bank) {
         symbols.setDecimalSeparator(DECIMAL_SEPARATOR);
         var format = new DecimalFormat("0,00", symbols);
         value = value.replace("-", "");
         format.setParseBigDecimal(true);
         try {
-            var parsedValue = (BigDecimal) format.parse(value);
+            var parsedValue = BigDecimal.ZERO;
+            if (value != null && !value.isEmpty()) {
+                parsedValue = (BigDecimal) format.parse(value);
+            } else if (fallbackValue != null && !fallbackValue.isEmpty()) {
+                parsedValue = (BigDecimal) format.parse(fallbackValue);
+            }
             transaction.setAmount(parsedValue);
         } catch (ParseException e) {
             throw new RuntimeException("Could not parse number", e);
@@ -41,5 +47,11 @@ public class TransactionAmountProvider implements FieldProvider {
                 .fieldType(getFieldType())
                 .numericValue(transaction.getAmount())
                 .build();
+    }
+
+    @Override
+    public FieldToEvaluate getFallbackFieldToEvaluate(BankTransaction transaction) {
+
+        return FieldProvider.super.getFallbackFieldToEvaluate(transaction);
     }
 }

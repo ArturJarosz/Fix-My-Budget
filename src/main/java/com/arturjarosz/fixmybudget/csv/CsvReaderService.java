@@ -1,10 +1,10 @@
 package com.arturjarosz.fixmybudget.csv;
 
+import com.arturjarosz.fixmybudget.csv.validator.CsvValidator;
 import com.arturjarosz.fixmybudget.dto.Bank;
+import com.arturjarosz.fixmybudget.properties.AccountStatementFileProperties;
 import com.arturjarosz.fixmybudget.transaction.mapper.RowToTransactionMapper;
 import com.arturjarosz.fixmybudget.transaction.model.BankTransaction;
-import com.arturjarosz.fixmybudget.csv.validator.CsvValidator;
-import com.arturjarosz.fixmybudget.properties.AccountStatementFileProperties;
 import com.opencsv.CSVParserBuilder;
 import com.opencsv.CSVReader;
 import com.opencsv.CSVReaderBuilder;
@@ -17,13 +17,19 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+
+import static org.springframework.util.StringUtils.trimTrailingCharacter;
 
 @Slf4j
 @RequiredArgsConstructor
 @Service
 public class CsvReaderService {
+    private static final String DEFAULT_CHARSET_NAME = "UTF-8";
+
     private final CsvValidator csvValidator;
     private final AccountStatementFileProperties accountStatementFileProperties;
     private final RowToTransactionMapper rowToTransactionMapper;
@@ -37,18 +43,26 @@ public class CsvReaderService {
                         .getCharacter())
                 .build();
 
-        try (Reader reader = new InputStreamReader(file.getInputStream()); CSVReader csvReader = new CSVReaderBuilder(
-                reader).withSkipLines(bankProperties.skipLines())
+        var charset = Charset.forName(bankProperties.charsetName() != null ? bankProperties.charsetName() : DEFAULT_CHARSET_NAME);
+        try (Reader reader = new InputStreamReader(file.getInputStream(),
+                charset); CSVReader csvReader = new CSVReaderBuilder(reader).withSkipLines(
+                        bankProperties.skipFirstLines())
                 .withCSVParser(parser)
                 .build()) {
-            String[] headers = csvReader.readNext();
-            if (headers == null) {
-                throw new IllegalArgumentException("CSV headers are empty");
-            }
-            csvValidator.checkFileHeaders(file, bank);
+            var headers = Arrays.stream(csvReader.readNext())
+                    .filter(header -> !header.trim().isEmpty())
+                    .map(header -> trimTrailingCharacter(header, bankProperties.trailingCharacter()
+                            .getCharacter()))
+                    .filter(header -> header != null)
+                    .filter(header -> !header.isEmpty())
+                    .toList();
+            csvValidator.checkFileHeaders(headers, bank);
             String[] dataRow = null;
             while ((dataRow = csvReader.readNext()) != null) {
-                var entity = rowToTransactionMapper.map(dataRow, bank);
+                if (!isRealDataRow(dataRow)) {
+                    continue;
+                }
+                var entity = rowToTransactionMapper.map(dataRow, bank, headers);
                 if (entity != null) {
                     entity.setSource(source);
                     bankTransactions.add(entity);
@@ -64,6 +78,14 @@ public class CsvReaderService {
         } catch (CsvException e) {
             throw new IllegalArgumentException("CSV file is not valid");
         }
+    }
+
+    private boolean isRealDataRow(String[] dataRow) {
+        if (dataRow.length == 0) {
+            return false;
+        }
+        // some files on the very end have some additional informational rows
+        return dataRow.length > 2;
     }
 
 }

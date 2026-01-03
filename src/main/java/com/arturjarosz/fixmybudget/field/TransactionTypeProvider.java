@@ -1,6 +1,7 @@
 package com.arturjarosz.fixmybudget.field;
 
 import com.arturjarosz.fixmybudget.category.FieldToEvaluate;
+import com.arturjarosz.fixmybudget.dto.Bank;
 import com.arturjarosz.fixmybudget.transaction.model.BankTransaction;
 import com.arturjarosz.fixmybudget.transaction.model.TransactionType;
 import com.arturjarosz.fixmybudget.properties.FieldType;
@@ -18,12 +19,17 @@ public class TransactionTypeProvider implements FieldProvider {
     DecimalFormatSymbols symbols = new DecimalFormatSymbols(Locale.of("PL"));
 
     @Override
-    public void enrichTransaction(BankTransaction transaction, String value) {
+    public void enrichTransaction(BankTransaction transaction, String value, String fallbackValue, Bank bank) {
         symbols.setDecimalSeparator(DECIMAL_SEPARATOR);
         var format = new DecimalFormat("0,00", symbols);
         format.setParseBigDecimal(true);
         try {
-            var parsedValue = (BigDecimal) format.parse(value);
+            var parsedValue = BigDecimal.ZERO;
+            if (value != null && !value.isEmpty()) {
+                parsedValue = (BigDecimal) format.parse(value);
+            } else if (fallbackValue != null && !fallbackValue.isEmpty()) {
+                parsedValue = (BigDecimal) format.parse(fallbackValue);
+            }
             var isNegative = parsedValue.compareTo(BigDecimal.ZERO) < 0;
             transaction.setTransactionType(isNegative ? TransactionType.EXPENSE : TransactionType.INCOME);
         } catch (ParseException e) {

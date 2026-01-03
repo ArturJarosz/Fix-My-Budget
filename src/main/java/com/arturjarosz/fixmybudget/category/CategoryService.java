@@ -11,6 +11,7 @@ import com.arturjarosz.fixmybudget.transaction.BankTransactionApplicationService
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -35,6 +36,51 @@ public class CategoryService {
     private final CategoryRepository categoryRepository;
     private final CategoryProperties categoryProperties;
     private final BankTransactionApplicationService bankTransactionApplicationService;
+
+    private static Category mergeCategoryGroup(CategoryKey key, List<Category> groupCategories) {
+        Category result = new Category();
+        result.setId(null);
+        result.setName(key.name());
+        result.setBankName(key.bank());
+        result.setColor(groupCategories.getFirst()
+                .getColor());
+
+        List<CategoryRequirement> mergedRequirements = new ArrayList<>();
+        for (Category category : groupCategories) {
+            if (category.getRequirements() == null) {
+                continue;
+            }
+            for (CategoryRequirement req : category.getRequirements()) {
+                CategoryRequirement copy = copyRequirementWithoutIds(req);
+                mergedRequirements.add(copy);
+            }
+        }
+
+        result.setRequirements(mergedRequirements);
+        return result;
+    }
+
+    private static CategoryRequirement copyRequirementWithoutIds(CategoryRequirement original) {
+        CategoryRequirement copy = new CategoryRequirement();
+        copy.setId(null);
+        copy.setFieldType(original.getFieldType());
+        copy.setMatchType(original.getMatchType());
+
+        if (original.getValues() != null) {
+            List<CategoryRequirementValue> valuesCopy = original.getValues()
+                    .stream()
+                    .map(value -> {
+                        CategoryRequirementValue v = new CategoryRequirementValue();
+                        v.setId(null);
+                        v.setValue(value.getValue());
+                        return v;
+                    })
+                    .collect(Collectors.toCollection(ArrayList::new));
+            copy.setValues(valuesCopy);
+        }
+
+        return copy;
+    }
 
     public byte[] getCategoriesAsFile() {
         log.info("Exporting categories to file.");
@@ -68,7 +114,8 @@ public class CategoryService {
         });
 
         categoryRepository.saveAll(importedCategories);
-        bankTransactionApplicationService.calculateCategories(importedCategories.get(0).getBankName());
+        bankTransactionApplicationService.calculateCategories(importedCategories.get(0)
+                .getBankName());
     }
 
     public List<Category> getCategories() {
@@ -116,50 +163,6 @@ public class CategoryService {
         }
         this.bankTransactionApplicationService.calculateCategories(incomingCategory.getBankName());
         return this.categoryRepository.save(categoryToUpdate);
-    }
-
-    private static Category mergeCategoryGroup(CategoryKey key, List<Category> groupCategories) {
-        Category result = new Category();
-        result.setId(null);
-        result.setName(key.name());
-        result.setBankName(key.bank());
-        result.setColor(groupCategories.getFirst().getColor());
-
-        List<CategoryRequirement> mergedRequirements = new ArrayList<>();
-        for (Category category : groupCategories) {
-            if (category.getRequirements() == null) {
-                continue;
-            }
-            for (CategoryRequirement req : category.getRequirements()) {
-                CategoryRequirement copy = copyRequirementWithoutIds(req);
-                mergedRequirements.add(copy);
-            }
-        }
-
-        result.setRequirements(mergedRequirements);
-        return result;
-    }
-
-    private static CategoryRequirement copyRequirementWithoutIds(CategoryRequirement original) {
-        CategoryRequirement copy = new CategoryRequirement();
-        copy.setId(null);
-        copy.setFieldType(original.getFieldType());
-        copy.setMatchType(original.getMatchType());
-
-        if (original.getValues() != null) {
-            List<CategoryRequirementValue> valuesCopy = original.getValues()
-                    .stream()
-                    .map(value -> {
-                        CategoryRequirementValue v = new CategoryRequirementValue();
-                        v.setId(null);
-                        v.setValue(value.getValue());
-                        return v;
-                    })
-                    .collect(Collectors.toCollection(ArrayList::new));
-            copy.setValues(valuesCopy);
-        }
-
-        return copy;
     }
 
     private List<Category> mergeDuplicateCategories(List<Category> categories) {
@@ -286,6 +289,17 @@ public class CategoryService {
             newVal.setValue(incomingNew.getValue());
             existingValues.add(newVal);
         }
+    }
+
+    public Category removeCategory(Long id) {
+        var categoryToRemove = this.categoryRepository.findById(id);
+        if (categoryToRemove.isEmpty()) {
+            throw new EntityNotFoundException("Category with id " + id + " not found.");
+        }
+        this.categoryRepository.deleteById(id);
+        this.bankTransactionApplicationService.calculateCategories(categoryToRemove.get()
+                .getBankName());
+        return categoryToRemove.get();
     }
 
     private record CategoryKey(String name, Bank bank) {

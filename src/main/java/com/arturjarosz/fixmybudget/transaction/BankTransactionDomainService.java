@@ -58,6 +58,7 @@ public class BankTransactionDomainService {
                 .filter(bankTransaction -> bankTransaction.getCategoryOverridden() == null || !bankTransaction.getCategoryOverridden())
                 .toList();
         categoryResolver.enrichWithCategories(bankTransactions, bank);
+        bankTransactionRepository.saveAll(bankTransactions);
 
         return buildResponse(bankTransactions);
     }

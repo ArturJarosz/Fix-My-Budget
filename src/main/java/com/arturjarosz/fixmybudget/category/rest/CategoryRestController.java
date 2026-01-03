@@ -7,6 +7,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -67,6 +68,11 @@ public class CategoryRestController {
     @PostMapping("/{categoryId}")
     public ResponseEntity<Category> updateCategory(@PathVariable("categoryId") Long id, @RequestBody Category category) {
         return ResponseEntity.ok(this.categoryService.updateCategory(id, category));
+    }
+
+    @DeleteMapping("/{categoryId}")
+    public ResponseEntity<Category> removeCategory(@PathVariable("categoryId") Long id) {
+        return ResponseEntity.ok(this.categoryService.removeCategory(id));
     }
 }
 

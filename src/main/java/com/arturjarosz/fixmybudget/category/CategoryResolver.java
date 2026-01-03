@@ -35,11 +35,12 @@ public class CategoryResolver {
     }
 
     public void enrichWithCategories(List<BankTransaction> transactions, Bank bank) {
-        log.info("Enriching [{}] bank transactions [{}] with categories.", bank.name(), transactions.size());
         var categories = categoryRepository.findAll()
                 .stream()
                 .filter(c -> c.getBankName() == bank)
                 .toList();
+        log.info("Enriching [{}] bank transactions [{}] with categories [{}].", bank.name(), transactions.size(),
+                categories.size());
         for (BankTransaction bankTransaction : transactions) {
             var category = resolveCategory(bankTransaction, bank, categories);
             bankTransaction.setCategory(category);

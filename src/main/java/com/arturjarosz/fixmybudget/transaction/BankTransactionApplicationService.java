@@ -4,6 +4,7 @@ import com.arturjarosz.fixmybudget.dto.Bank;
 import com.arturjarosz.fixmybudget.csv.validator.FileValidator;
 import com.arturjarosz.fixmybudget.dto.OverrideCategoryDto;
 import com.arturjarosz.fixmybudget.dto.AnalyzedStatementDto;
+import com.arturjarosz.fixmybudget.transaction.dto.TransactionsSummary;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -36,5 +37,10 @@ public class BankTransactionApplicationService {
         var updatedBankTransaction =
                 bankTransactionDomainService.overrideCategory(bankTransactionId, overrideCategoryDto);
         return new OverrideCategoryDto(bankTransactionId, updatedBankTransaction.getCategory());
+    }
+
+    public TransactionsSummary getTransactionsSummary() {
+        log.info("Getting all transactions summary.");
+        return bankTransactionDomainService.getTransactionsSummary();
     }
 }

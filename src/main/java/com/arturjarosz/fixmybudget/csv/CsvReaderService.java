@@ -49,14 +49,17 @@ public class CsvReaderService {
                         bankProperties.skipFirstLines())
                 .withCSVParser(parser)
                 .build()) {
-            var headers = Arrays.stream(csvReader.readNext())
-                    .filter(header -> !header.trim().isEmpty())
-                    .map(header -> trimTrailingCharacter(header, bankProperties.trailingCharacter()
-                            .getCharacter()))
-                    .filter(header -> header != null)
-                    .filter(header -> !header.isEmpty())
-                    .toList();
-            csvValidator.checkFileHeaders(headers, bank);
+            List<String> headers = new ArrayList<String>();
+            if (bankProperties.hasHeaders()) {
+                headers = Arrays.stream(csvReader.readNext())
+                        .filter(header -> !header.trim().isEmpty())
+                        .map(header -> trimTrailingCharacter(header, bankProperties.trailingCharacter()
+                                .getCharacter()))
+                        .filter(header -> header != null)
+                        .filter(header -> !header.isEmpty())
+                        .toList();
+                csvValidator.checkFileHeaders(headers, bank);
+            }
             String[] dataRow = null;
             while ((dataRow = csvReader.readNext()) != null) {
                 if (!isRealDataRow(dataRow)) {

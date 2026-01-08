@@ -48,10 +48,10 @@ databaseChangeLog:
                   type: "VARCHAR2(100 ${char.unit})"
               - column:
                   name: "RECIPIENT_ACCOUNT"
-                  type: "VARCHAR2(32 ${char.unit})"
+                  type: "VARCHAR2(34 ${char.unit})"
               - column:
                   name: "SENDER_ACCOUNT"
-                  type: "VARCHAR2(32 ${char.unit})"
+                  type: "VARCHAR2(34 ${char.unit})"
               - column:
                   name: "SOURCE"
                   type: "VARCHAR2(40 ${char.unit})"

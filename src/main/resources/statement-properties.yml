@@ -69,9 +69,11 @@ account-statement:
             - TRANSACTION_TYPE
         - name: "Saldo"
         - name: "Pozycja historii"
+        - name: "Empty"
       skip-first-lines: 1
       has-headers: false
       delimiter: SEMICOLON
+      trailing-character: SEMICOLON
     ING:
       should-clean-recipient-sender: true
       skip-first-lines: 19

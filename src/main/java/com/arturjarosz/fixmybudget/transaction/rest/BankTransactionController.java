@@ -5,9 +5,11 @@ import com.arturjarosz.fixmybudget.transaction.BankTransactionApplicationService
 import com.arturjarosz.fixmybudget.dto.OverrideCategoryDto;
 import com.arturjarosz.fixmybudget.dto.AnalyzedStatementDto;
 import com.arturjarosz.fixmybudget.transaction.dto.RecalculateCategoriesTransactionsDto;
+import com.arturjarosz.fixmybudget.transaction.dto.TransactionsSummary;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.lang.NonNull;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -38,4 +40,10 @@ public class BankTransactionController {
             @RequestBody OverrideCategoryDto overrideCategoryDto) {
         return ResponseEntity.ok(bankTransactionApplicationService.overrideCategory(bankTransactionId, overrideCategoryDto));
     }
+
+    @GetMapping("/summary")
+    ResponseEntity<TransactionsSummary> getTransactionsSummary() {
+        return ResponseEntity.ok(bankTransactionApplicationService.getTransactionsSummary());
+    }
+
 }

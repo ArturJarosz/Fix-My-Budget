@@ -296,10 +296,16 @@ public class CategoryService {
         if (categoryToRemove.isEmpty()) {
             throw new EntityNotFoundException("Category with id " + id + " not found.");
         }
+        this.removeTransactionsWithOverriddenCategory(categoryToRemove.get());
         this.categoryRepository.deleteById(id);
+
         this.bankTransactionApplicationService.calculateCategories(categoryToRemove.get()
                 .getBankName());
         return categoryToRemove.get();
+    }
+
+    private void removeTransactionsWithOverriddenCategory(Category category){
+        this.bankTransactionApplicationService.cleanTransactionsOverriddenCategory(category);
     }
 
     private record CategoryKey(String name, Bank bank) {

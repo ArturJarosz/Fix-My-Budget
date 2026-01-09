@@ -6,6 +6,7 @@ import com.arturjarosz.fixmybudget.dto.OverrideCategoryDto;
 import com.arturjarosz.fixmybudget.dto.AnalyzedStatementDto;
 import com.arturjarosz.fixmybudget.transaction.dto.RecalculateCategoriesTransactionsDto;
 import com.arturjarosz.fixmybudget.transaction.dto.TransactionsSummary;
+import com.arturjarosz.fixmybudget.transaction.model.BankTransaction;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.lang.NonNull;
@@ -36,7 +37,7 @@ public class BankTransactionController {
     }
 
     @PostMapping("/{bankTransactionId}/override-category")
-    ResponseEntity<OverrideCategoryDto> overrideTransaction(@PathVariable("bankTransactionId") Long bankTransactionId,
+    ResponseEntity<BankTransaction> overrideTransaction(@PathVariable Long bankTransactionId,
             @RequestBody OverrideCategoryDto overrideCategoryDto) {
         return ResponseEntity.ok(bankTransactionApplicationService.overrideCategory(bankTransactionId, overrideCategoryDto));
     }

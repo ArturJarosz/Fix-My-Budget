@@ -1,5 +1,6 @@
 package com.arturjarosz.fixmybudget.transaction.repository;
 
+import com.arturjarosz.fixmybudget.dto.Bank;
 import com.arturjarosz.fixmybudget.transaction.model.BankTransaction;
 import com.arturjarosz.fixmybudget.transaction.model.TransactionType;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -11,4 +12,6 @@ import java.util.List;
 public interface BankTransactionRepository extends JpaRepository<BankTransaction, Long> {
 
     List<BankTransaction> findAllByTransactionType(TransactionType transactionType);
+
+    List<BankTransaction> findAllByCategoryAndBank(String categoryName, Bank bank);
 }

@@ -1,6 +1,7 @@
 package com.arturjarosz.fixmybudget.transaction;
 
 import com.arturjarosz.fixmybudget.category.CategoryResolver;
+import com.arturjarosz.fixmybudget.category.model.Category;
 import com.arturjarosz.fixmybudget.csv.CsvReaderService;
 import com.arturjarosz.fixmybudget.dto.AnalyzedStatementDto;
 import com.arturjarosz.fixmybudget.dto.Bank;
@@ -33,6 +34,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Service
 public class BankTransactionDomainService {
+    private static final String UNCATEGORIZED = "UNCATEGORIZED";
 
     private final CategoryResolver categoryResolver;
     private final BankTransactionRepository bankTransactionRepository;
@@ -98,15 +100,28 @@ public class BankTransactionDomainService {
     }
 
     public BankTransaction overrideCategory(Long bankTransactionId, OverrideCategoryDto overrideCategoryDto) {
-        log.info(" Overriding category for bank transaction {}.", bankTransactionId);
+        log.info("Overriding category for bank transaction {}.", bankTransactionId);
         var maybeBankTransaction = bankTransactionRepository.findById(bankTransactionId);
         if (maybeBankTransaction.isEmpty()) {
             throw new EntityNotFoundException("Bank transaction with id " + bankTransactionId + " not found");
         }
 
         var bankTransaction = maybeBankTransaction.get();
-        bankTransaction.setCategory(overrideCategoryDto.getCategory());
+        bankTransaction.setCategory(overrideCategoryDto.getCategoryName());
         bankTransaction.setCategoryOverridden(true);
+
+        return bankTransaction;
+    }
+
+    public BankTransaction clearOverrideCategory(Long bankTransactionId) {
+        log.info("Clearing category override for bank transaction: {}.", bankTransactionId);
+        var maybeBankTransaction = bankTransactionRepository.findById(bankTransactionId);
+        if (maybeBankTransaction.isEmpty()) {
+            throw new EntityNotFoundException("Bank transaction with id " + bankTransactionId + " not found");
+        }
+
+        var bankTransaction = maybeBankTransaction.get();
+        bankTransaction.setCategoryOverridden(false);
 
         return bankTransaction;
     }
@@ -123,11 +138,11 @@ public class BankTransactionDomainService {
 
         transactionsByBankAndCategory.entrySet()
                 .forEach(entry -> {
-            var bank = entry.getKey();
-            var transactionsByCategory = entry.getValue();
-            var summaryByTransactionType = getSummaryByTransactionType(transactionsByCategory);
-            summaryByBank.put(bank, summaryByTransactionType);
-        });
+                    var bank = entry.getKey();
+                    var transactionsByCategory = entry.getValue();
+                    var summaryByTransactionType = getSummaryByTransactionType(transactionsByCategory);
+                    summaryByBank.put(bank, summaryByTransactionType);
+                });
 
         return TransactionsSummary.builder()
                 .categorySummaryByTypeByBank(summaryByBank)
@@ -136,7 +151,8 @@ public class BankTransactionDomainService {
     }
 
 
-    private Map<TransactionType, List<CategorySummary>> getSummaryByTransactionType(Map<String, List<BankTransaction>> transactionsByCategory) {
+    private Map<TransactionType, List<CategorySummary>> getSummaryByTransactionType(
+            Map<String, List<BankTransaction>> transactionsByCategory) {
         var summaryByTransactionType = new HashMap<TransactionType, List<CategorySummary>>();
         transactionsByCategory.forEach((categoryName, transactions) -> {
             var categorySummary = getCategorySummary(categoryName, transactions);
@@ -145,34 +161,45 @@ public class BankTransactionDomainService {
                 transactionType = transactions.getFirst()
                         .getTransactionType();
             }
-            summaryByTransactionType.computeIfAbsent(transactionType, k -> new ArrayList<>()).add(categorySummary);
+            summaryByTransactionType.computeIfAbsent(transactionType, k -> new ArrayList<>())
+                    .add(categorySummary);
         });
         return summaryByTransactionType;
     }
 
-    private Map<TransactionType, List<CategorySummary>> getAllBanksSummary(Map<Bank, Map<TransactionType, List<CategorySummary>>> categorySummaryByTypeByBank) {
+    private Map<TransactionType, List<CategorySummary>> getAllBanksSummary(
+            Map<Bank, Map<TransactionType, List<CategorySummary>>> categorySummaryByTypeByBank) {
         var summaryByTransactionType = new HashMap<TransactionType, Set<CategorySummary>>();
         summaryByTransactionType.put(TransactionType.INCOME, new HashSet<>());
         summaryByTransactionType.put(TransactionType.EXPENSE, new HashSet<>());
         categorySummaryByTypeByBank.forEach((bank, transactionTypeSummary) -> {
             transactionTypeSummary.forEach((transactionType, categorySummaries) -> {
                 categorySummaries.forEach(summary -> {
-                    if (summaryByTransactionType.get(TransactionType.INCOME).contains(summary)) {
-                        var toMerge = summaryByTransactionType.get(TransactionType.INCOME).stream()
+                    if (summaryByTransactionType.get(TransactionType.INCOME)
+                            .contains(summary)) {
+                        var toMerge = summaryByTransactionType.get(TransactionType.INCOME)
+                                .stream()
                                 .filter(s -> s.equals(summary))
                                 .findFirst()
                                 .orElse(null);
-                        summaryByTransactionType.get(TransactionType.INCOME).remove(toMerge);
-                        summaryByTransactionType.get(TransactionType.INCOME).add(mergeSummaries(toMerge, summary));
-                    } else if (summaryByTransactionType.get(TransactionType.EXPENSE).contains(summary)) {
-                        var toMerge = summaryByTransactionType.get(TransactionType.EXPENSE).stream()
+                        summaryByTransactionType.get(TransactionType.INCOME)
+                                .remove(toMerge);
+                        summaryByTransactionType.get(TransactionType.INCOME)
+                                .add(mergeSummaries(toMerge, summary));
+                    } else if (summaryByTransactionType.get(TransactionType.EXPENSE)
+                            .contains(summary)) {
+                        var toMerge = summaryByTransactionType.get(TransactionType.EXPENSE)
+                                .stream()
                                 .filter(s -> s.equals(summary))
                                 .findFirst()
                                 .orElse(null);
-                        summaryByTransactionType.get(TransactionType.EXPENSE).remove(toMerge);
-                        summaryByTransactionType.get(TransactionType.EXPENSE).add(mergeSummaries(toMerge, summary));
+                        summaryByTransactionType.get(TransactionType.EXPENSE)
+                                .remove(toMerge);
+                        summaryByTransactionType.get(TransactionType.EXPENSE)
+                                .add(mergeSummaries(toMerge, summary));
                     } else {
-                        summaryByTransactionType.get(summary.type()).add(summary);
+                        summaryByTransactionType.get(summary.type())
+                                .add(summary);
                     }
                 });
             });
@@ -189,7 +216,8 @@ public class BankTransactionDomainService {
         return CategorySummary.builder()
                 .name(main.name())
                 .count(main.count() + toMerge.count())
-                .totalAmount(main.totalAmount().add(toMerge.totalAmount()))
+                .totalAmount(main.totalAmount()
+                        .add(toMerge.totalAmount()))
                 .type(main.type())
                 .build();
     }
@@ -205,6 +233,16 @@ public class BankTransactionDomainService {
         }
 
         return new CategorySummary(categoryName, summary.count, summary.totalValue, transactionType);
+    }
+
+    public void cleanTransactionsOverriddenCategory(Category category) {
+        var transactions =
+                this.bankTransactionRepository.findAllByCategoryAndBank(category.getName(), category.getBankName());
+        transactions.forEach(transaction -> {
+            transaction.setCategoryOverridden(false);
+            transaction.setCategory(UNCATEGORIZED);
+        });
+        this.bankTransactionRepository.saveAll(transactions);
     }
 
     @Getter

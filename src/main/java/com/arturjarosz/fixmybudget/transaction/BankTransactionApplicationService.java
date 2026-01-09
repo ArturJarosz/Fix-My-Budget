@@ -1,10 +1,12 @@
 package com.arturjarosz.fixmybudget.transaction;
 
+import com.arturjarosz.fixmybudget.category.model.Category;
 import com.arturjarosz.fixmybudget.dto.Bank;
 import com.arturjarosz.fixmybudget.csv.validator.FileValidator;
 import com.arturjarosz.fixmybudget.dto.OverrideCategoryDto;
 import com.arturjarosz.fixmybudget.dto.AnalyzedStatementDto;
 import com.arturjarosz.fixmybudget.transaction.dto.TransactionsSummary;
+import com.arturjarosz.fixmybudget.transaction.model.BankTransaction;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -32,15 +34,20 @@ public class BankTransactionApplicationService {
     }
 
     @Transactional
-    public OverrideCategoryDto overrideCategory(Long bankTransactionId, OverrideCategoryDto overrideCategoryDto) {
+    public BankTransaction overrideCategory(Long bankTransactionId, OverrideCategoryDto overrideCategoryDto) {
         log.info("Overriding category for bank transaction {}.", bankTransactionId);
-        var updatedBankTransaction =
-                bankTransactionDomainService.overrideCategory(bankTransactionId, overrideCategoryDto);
-        return new OverrideCategoryDto(bankTransactionId, updatedBankTransaction.getCategory());
+        if (overrideCategoryDto.isOverride()){
+            return bankTransactionDomainService.overrideCategory(bankTransactionId, overrideCategoryDto);
+        }
+        return bankTransactionDomainService.clearOverrideCategory(bankTransactionId);
     }
 
     public TransactionsSummary getTransactionsSummary() {
         log.info("Getting all transactions summary.");
         return bankTransactionDomainService.getTransactionsSummary();
+    }
+
+    public void cleanTransactionsOverriddenCategory(Category category) {
+        this.bankTransactionDomainService.cleanTransactionsOverriddenCategory(category);
     }
 }

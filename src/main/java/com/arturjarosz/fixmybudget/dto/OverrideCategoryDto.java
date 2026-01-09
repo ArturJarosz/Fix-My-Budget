@@ -9,5 +9,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class OverrideCategoryDto {
     private Long bankTransactionId;
-    private String category;
+    private String categoryName;
+    private boolean override;
 }

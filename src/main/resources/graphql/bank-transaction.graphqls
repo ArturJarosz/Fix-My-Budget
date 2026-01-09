@@ -16,6 +16,7 @@ type BankTransaction {
     recipientAccount: String
     bank: String
     source: String
+    categoryOverridden: Boolean
 }
 
 type Query {

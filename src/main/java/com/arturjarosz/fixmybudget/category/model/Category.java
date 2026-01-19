@@ -52,6 +52,12 @@ public class Category {
     @Column(name = "COLOR")
     private String color;
 
+    @Column(name = "IGNORE_IN_BANK")
+    boolean ignoreInBank = false;
+
+    @Column(name = "IGNORE_IN_SUMMARY")
+    boolean ignoreInSummary = false;
+
     @Override
     public boolean equals(Object o) {
         if (!(o instanceof Category category)) return false;

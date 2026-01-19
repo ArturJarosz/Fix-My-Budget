@@ -1,5 +1,6 @@
 package com.arturjarosz.fixmybudget.category;
 
+import com.arturjarosz.fixmybudget.category.dto.IgnoreCategoryStatus;
 import com.arturjarosz.fixmybudget.category.exception.CategoryAlreadyExistsException;
 import com.arturjarosz.fixmybudget.category.model.Category;
 import com.arturjarosz.fixmybudget.category.model.CategoryRequirement;
@@ -154,12 +155,10 @@ public class CategoryService {
         mergeRequirements(categoryToUpdate.getRequirements(), incomingCategory.getRequirements());
 
         // Optionally, enforce uniqueness
-        if (this.categoryRepository.existsByNameAndBankName(categoryToUpdate.getName(), categoryToUpdate.getBankName())
-                && !Objects.equals(categoryToUpdate.getId(), id)) {
+        if (this.categoryRepository.existsByNameAndBankName(categoryToUpdate.getName(),
+                categoryToUpdate.getBankName()) && !Objects.equals(categoryToUpdate.getId(), id)) {
             throw new CategoryAlreadyExistsException(
-                    "Category with name '" + categoryToUpdate.getName()
-                            + "' and bank '" + categoryToUpdate.getBankName()
-                            + "' already exists.");
+                    "Category with name '" + categoryToUpdate.getName() + "' and bank '" + categoryToUpdate.getBankName() + "' already exists.");
         }
         this.bankTransactionApplicationService.calculateCategories(incomingCategory.getBankName());
         return this.categoryRepository.save(categoryToUpdate);
@@ -304,8 +303,20 @@ public class CategoryService {
         return categoryToRemove.get();
     }
 
-    private void removeTransactionsWithOverriddenCategory(Category category){
+    private void removeTransactionsWithOverriddenCategory(Category category) {
         this.bankTransactionApplicationService.cleanTransactionsOverriddenCategory(category);
+    }
+
+    @Transactional
+    public Category updateIgnoreStatus(Long id, IgnoreCategoryStatus ignoreCategoryStatus) {
+        var maybeCategory = this.categoryRepository.findById(id);
+        if (maybeCategory.isEmpty()) {
+            throw new EntityNotFoundException("Category with id " + id + " not found.");
+        }
+        var category = maybeCategory.get();
+        category.setIgnoreInBank(ignoreCategoryStatus.ignoreBank());
+        category.setIgnoreInSummary(ignoreCategoryStatus.ignoreSummary());
+        return category;
     }
 
     private record CategoryKey(String name, Bank bank) {

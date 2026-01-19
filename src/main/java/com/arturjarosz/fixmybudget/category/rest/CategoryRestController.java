@@ -1,6 +1,7 @@
 package com.arturjarosz.fixmybudget.category.rest;
 
 import com.arturjarosz.fixmybudget.category.CategoryService;
+import com.arturjarosz.fixmybudget.category.dto.IgnoreCategoryStatus;
 import com.arturjarosz.fixmybudget.category.model.Category;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
@@ -66,13 +67,20 @@ public class CategoryRestController {
     }
 
     @PostMapping("/{categoryId}")
-    public ResponseEntity<Category> updateCategory(@PathVariable("categoryId") Long id, @RequestBody Category category) {
+    public ResponseEntity<Category> updateCategory(@PathVariable("categoryId") Long id,
+            @RequestBody Category category) {
         return ResponseEntity.ok(this.categoryService.updateCategory(id, category));
     }
 
     @DeleteMapping("/{categoryId}")
     public ResponseEntity<Category> removeCategory(@PathVariable("categoryId") Long id) {
         return ResponseEntity.ok(this.categoryService.removeCategory(id));
+    }
+
+    @PostMapping("/{categoryId}/ignore-status")
+    public ResponseEntity<Category> updateIgnoreStatus(@PathVariable("categoryId") Long id,
+            @RequestBody IgnoreCategoryStatus ignoreCategoryStatus) {
+        return ResponseEntity.ok(this.categoryService.updateIgnoreStatus(id, ignoreCategoryStatus));
     }
 }
 

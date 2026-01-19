@@ -26,7 +26,16 @@ databaseChangeLog:
                   type: "VARCHAR2(10 ${char.unit})"
                   constraints:
                     nullable: false
+              - column:
+                  name: "IGNORE_IN_BANK"
+                  type: "${boolean.type}"
+                  defaultValue: false
+              - column:
+                  name: "IGNORE_IN_SUMMARY"
+                  type: "${boolean.type}"
+                  defaultValue: false
         - addPrimaryKey:
             tableName: "CATEGORY"
             constraintName: "PK_CATEGORY"
             columnNames: "ID"
+

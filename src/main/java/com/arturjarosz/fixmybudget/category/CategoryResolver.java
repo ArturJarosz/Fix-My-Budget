@@ -50,7 +50,7 @@ public class CategoryResolver {
     String resolveCategory(BankTransaction bankTransaction, Bank bank, List<Category> categories) {
         String resolvedCategory = UNCATEGORIZED;
         for (Category category : categories) {
-            var requirementsMet = true;
+            var requirementsMet = false;
             for (CategoryRequirement requirement : category.getRequirements()) {
                 var checker = checkerByType.get(requirement.getMatchType());
                 var fieldToEvaluate = fieldProviderByFieldType.get(requirement.getFieldType())

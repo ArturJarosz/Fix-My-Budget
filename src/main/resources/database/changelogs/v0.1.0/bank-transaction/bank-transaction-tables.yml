@@ -18,7 +18,7 @@ databaseChangeLog:
                     nullable: false
               - column:
                   name: "TRANSACTION_TYPE"
-                  type: "VARCHAR2(30 ${char.unit})"
+                  type: "VARCHAR2(60 ${char.unit})"
                   constraints:
                     nullable: false
               - column:
@@ -29,7 +29,7 @@ databaseChangeLog:
                     nullable: false
               - column:
                   name: "CATEGORY"
-                  type: "VARCHAR2(30 ${char.unit})"
+                  type: "VARCHAR2(60 ${char.unit})"
                   constraints:
                     nullable: false
               - column:
@@ -42,10 +42,10 @@ databaseChangeLog:
                     nullable: false
               - column:
                   name: "RECIPIENT_NAME"
-                  type: "VARCHAR2(100 ${char.unit})"
+                  type: "VARCHAR2(120 ${char.unit})"
               - column:
                   name: "SENDER_NAME"
-                  type: "VARCHAR2(100 ${char.unit})"
+                  type: "VARCHAR2(120 ${char.unit})"
               - column:
                   name: "RECIPIENT_ACCOUNT"
                   type: "VARCHAR2(34 ${char.unit})"
@@ -54,7 +54,7 @@ databaseChangeLog:
                   type: "VARCHAR2(34 ${char.unit})"
               - column:
                   name: "SOURCE"
-                  type: "VARCHAR2(40 ${char.unit})"
+                  type: "VARCHAR2(50 ${char.unit})"
               - column:
                   name: "BANK"
                   type: "VARCHAR2(40 ${char.unit})"

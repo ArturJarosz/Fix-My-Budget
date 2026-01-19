@@ -2,6 +2,7 @@ package com.arturjarosz.fixmybudget.transaction;
 
 import com.arturjarosz.fixmybudget.category.CategoryResolver;
 import com.arturjarosz.fixmybudget.category.model.Category;
+import com.arturjarosz.fixmybudget.category.repository.CategoryRepository;
 import com.arturjarosz.fixmybudget.csv.CsvReaderService;
 import com.arturjarosz.fixmybudget.dto.AnalyzedStatementDto;
 import com.arturjarosz.fixmybudget.dto.Bank;
@@ -39,6 +40,7 @@ public class BankTransactionDomainService {
     private final CategoryResolver categoryResolver;
     private final BankTransactionRepository bankTransactionRepository;
     private final CsvReaderService csvReaderService;
+    private final CategoryRepository categoryRepository;
 
     public AnalyzedStatementDto processCsv(MultipartFile file, Bank bank, String source) {
         log.info("Processing CSV file for bank {} from source {}.", bank, source);
@@ -136,13 +138,10 @@ public class BankTransactionDomainService {
         Map<Bank, Map<TransactionType, List<CategorySummary>>> summaryByBank = new HashMap<>();
 
 
-        transactionsByBankAndCategory.entrySet()
-                .forEach(entry -> {
-                    var bank = entry.getKey();
-                    var transactionsByCategory = entry.getValue();
-                    var summaryByTransactionType = getSummaryByTransactionType(transactionsByCategory);
-                    summaryByBank.put(bank, summaryByTransactionType);
-                });
+        transactionsByBankAndCategory.forEach((bank, transactionsByCategory) -> {
+            var summaryByTransactionType = getSummaryByTransactionType(transactionsByCategory);
+            summaryByBank.put(bank, summaryByTransactionType);
+        });
 
         return TransactionsSummary.builder()
                 .categorySummaryByTypeByBank(summaryByBank)
